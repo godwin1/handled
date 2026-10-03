@@ -1,0 +1,9 @@
+.env
+.env.local
+.env.*.local
+prisma/dev.db
+prisma/dev.db-journal
+public/uploads
+android
+ios
+www

@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Household {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  members   User[]
+  people    Person[]
+  assets    Asset[]
+  accounts  Account[]
+  documents Document[]
+  tasks     Task[]
+  invites   Invite[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  assignedTasks Task[]    @relation("TaskAssignee")
+  comments      Comment[]
+  sessions      Session[]
+  sentInvites   Invite[]
+}
+
+model Invite {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  email      String?
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  invitedByUserId String
+  invitedBy       User   @relation(fields: [invitedByUserId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// relationship: self | partner | child | parent | other
+model Person {
+  id           String    @id @default(cuid())
+  name         String
+  relationship String
+  dateOfBirth  DateTime?
+  createdAt    DateTime  @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  ownedAssets Asset[]
+  accounts    Account[]
+  documents   Document[]
+  tasks       Task[]
+}
+
+// type: home | rental | car | scooter | phone | other
+model Asset {
+  id      String  @id @default(cuid())
+  name    String
+  type    String
+  details String?
+
+  createdAt DateTime @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  ownerId String?
+  owner   Person? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  accounts  Account[]
+  documents Document[]
+  tasks     Task[]
+}
+
+// type: utility | internet | insurance | bank | school | medical | other
+model Account {
+  id       String  @id @default(cuid())
+  name     String
+  provider String?
+  type     String
+
+  createdAt DateTime @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  personId String?
+  person   Person? @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  assetId String?
+  asset   Asset?  @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  documents Document[]
+  tasks     Task[]
+}
+
+// type: bill | id | contract | warranty | receipt | medical | other
+// status: PENDING_REVIEW | CONFIRMED
+model Document {
+  id     String @id @default(cuid())
+  title  String
+  type   String
+  status String @default("PENDING_REVIEW")
+
+  fileUrl  String
+  mimeType String
+
+  merchant     String?
+  amount       Float?
+  currency     String?
+  dueDate      DateTime?
+  expiryDate   DateTime?
+  policyNumber String?
+  notes        String?
+
+  // Extraction's proposed follow-up task (set at upload, consumed by the
+  // confirm screen's defaults) - type: pay | renew | cancel | book | submit | call | other
+  suggestedTaskTitle   String?
+  suggestedTaskType    String?
+  suggestedTaskDueDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  personId String?
+  person   Person? @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  assetId String?
+  asset   Asset?  @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  tasks Task[]
+}
+
+// type: pay | renew | cancel | book | submit | call | other
+// status: OPEN | DONE | SNOOZED
+model Task {
+  id     String @id @default(cuid())
+  title  String
+  type   String
+  status String @default("OPEN")
+
+  dueDate     DateTime
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  assigneeId String?
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  personId String?
+  person   Person? @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  assetId String?
+  asset   Asset?  @relation(fields: [assetId], references: [id], onDelete: SetNull)
+
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
+
+  documentId String?
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  comments Comment[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
