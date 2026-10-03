@@ -20,6 +20,7 @@ model Household {
   documents Document[]
   tasks     Task[]
   invites   Invite[]
+  auditLogs AuditLog[]
 }
 
 model User {
@@ -29,14 +30,59 @@ model User {
   name         String
   createdAt    DateTime @default(now())
 
+  // Household creator starts as admin. Admins manage member admin status
+  // and per-category permissions, and are the only ones who can see the
+  // audit log. Always implies full view+edit on every category, regardless
+  // of any MemberPermission rows.
+  isAdmin Boolean @default(false)
+
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
-  assignedTasks      Task[]              @relation("TaskAssignee")
-  comments           Comment[]
-  sessions           Session[]
-  sentInvites        Invite[]
+  assignedTasks       Task[]               @relation("TaskAssignee")
+  comments            Comment[]
+  sessions            Session[]
+  sentInvites         Invite[]
   passwordResetTokens PasswordResetToken[]
+  permissions         MemberPermission[]
+  auditLogs           AuditLog[]
+}
+
+// category: people | assets | accounts | documents | tasks
+// level: none | view | edit
+// No row for a (user, category) pair means "edit" (full access) - the
+// default for every member until an admin restricts it.
+model MemberPermission {
+  id        String   @id @default(cuid())
+  category  String
+  level     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+}
+
+// action: created | updated | deleted | member_joined | member_admin_changed |
+//         member_permission_changed | invite_created | invite_revoked
+// category: people | assets | accounts | documents | tasks | household | member
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  category    String
+  entityLabel String
+  detail      String?
+  createdAt   DateTime @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  // Nullable: keep the log entry if the actor's account is later removed.
+  userId     String?
+  user       User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userNameAtTime String
 }
 
 model PasswordResetToken {

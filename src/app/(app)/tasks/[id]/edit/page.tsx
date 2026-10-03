@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateTask } from "@/lib/actions/tasks";
+import { canEdit } from "@/lib/permissions";
 
 const TASK_TYPES = ["pay", "renew", "cancel", "book", "submit", "call", "other"];
 
@@ -13,6 +14,7 @@ function toInputDate(date: Date) {
 export default async function EditTaskPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
+  if (!canEdit(user, "tasks")) redirect(`/tasks/${id}`);
 
   const [task, people, assets, accounts, members] = await Promise.all([
     prisma.task.findFirst({ where: { id, householdId: user.householdId } }),

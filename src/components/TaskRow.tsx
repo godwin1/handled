@@ -27,19 +27,34 @@ function formatDue(date: Date) {
   return { label: `in ${diffDays}d`, overdue: false };
 }
 
-export function TaskRow({ task }: { task: TaskWithRelations }) {
+export function TaskRow({ task, editable = true }: { task: TaskWithRelations; editable?: boolean }) {
   const related = task.person?.name || task.asset?.name || task.account?.name;
   const due = formatDue(task.dueDate);
   const done = task.status === "DONE";
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-stone-100 last:border-0">
-      <form action={toggleTaskStatus.bind(null, task.id)}>
-        <button
-          type="submit"
-          aria-label={done ? "Mark as not done" : "Mark as done"}
+      {editable ? (
+        <form action={toggleTaskStatus.bind(null, task.id)}>
+          <button
+            type="submit"
+            aria-label={done ? "Mark as not done" : "Mark as done"}
+            className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${
+              done ? "bg-sage-600 border-sage-600 text-white" : "border-stone-300 hover:border-accent-400"
+            }`}
+          >
+            {done && (
+              <svg viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                <path d="M16.7 5.3a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-3-3a1 1 0 111.4-1.4l2.3 2.3 6.3-6.3a1 1 0 011.4 0z" />
+              </svg>
+            )}
+          </button>
+        </form>
+      ) : (
+        <div
+          aria-hidden
           className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${
-            done ? "bg-sage-600 border-sage-600 text-white" : "border-stone-300 hover:border-accent-400"
+            done ? "bg-sage-600 border-sage-600 text-white" : "border-stone-300"
           }`}
         >
           {done && (
@@ -47,8 +62,8 @@ export function TaskRow({ task }: { task: TaskWithRelations }) {
               <path d="M16.7 5.3a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-3-3a1 1 0 111.4-1.4l2.3 2.3 6.3-6.3a1 1 0 011.4 0z" />
             </svg>
           )}
-        </button>
-      </form>
+        </div>
+      )}
 
       <div className="flex-1 min-w-0">
         <Link

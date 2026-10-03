@@ -1,12 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPerson, deletePerson } from "@/lib/actions/people";
+import { canEdit, canView } from "@/lib/permissions";
 
 const RELATIONSHIPS = ["self", "partner", "child", "parent", "other"];
 
 export default async function PeoplePage() {
   const user = await requireUser();
+  if (!canView(user, "people")) redirect("/dashboard");
+  const editable = canEdit(user, "people");
+
   const people = await prisma.person.findMany({
     where: { householdId: user.householdId },
     orderBy: { createdAt: "asc" },
@@ -30,22 +35,25 @@ export default async function PeoplePage() {
                     {person.dateOfBirth && ` · born ${person.dateOfBirth.toLocaleDateString()}`}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Link href={`/people/${person.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
-                    Edit
-                  </Link>
-                  <form action={deletePerson.bind(null, person.id)}>
-                    <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
-                      Remove
-                    </button>
-                  </form>
-                </div>
+                {editable && (
+                  <div className="flex items-center gap-3">
+                    <Link href={`/people/${person.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
+                      Edit
+                    </Link>
+                    <form action={deletePerson.bind(null, person.id)}>
+                      <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                        Remove
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </section>
 
+      {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Add a person</h2>
         <form action={createPerson} className="flex flex-wrap items-end gap-3">
@@ -83,6 +91,7 @@ export default async function PeoplePage() {
           </button>
         </form>
       </section>
+      )}
     </div>
   );
 }

@@ -4,14 +4,15 @@ import { getCurrentUser } from "@/lib/auth";
 import { logOut } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { ReminderSync } from "@/components/ReminderSync";
+import { canView, type Category } from "@/lib/permissions";
 
-const NAV = [
+const NAV: { href: string; label: string; category?: Category }[] = [
   { href: "/dashboard", label: "This week" },
-  { href: "/documents", label: "Documents" },
-  { href: "/tasks", label: "Tasks" },
-  { href: "/people", label: "People" },
-  { href: "/assets", label: "Assets" },
-  { href: "/accounts", label: "Accounts" },
+  { href: "/documents", label: "Documents", category: "documents" },
+  { href: "/tasks", label: "Tasks", category: "tasks" },
+  { href: "/people", label: "People", category: "people" },
+  { href: "/assets", label: "Assets", category: "assets" },
+  { href: "/accounts", label: "Accounts", category: "accounts" },
   { href: "/search", label: "Search" },
   { href: "/household", label: "Household" },
 ];
@@ -19,6 +20,8 @@ const NAV = [
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const nav = NAV.filter((item) => !item.category || canView(user, item.category));
 
   const openTasks = await prisma.task.findMany({
     where: { householdId: user.householdId, status: "OPEN" },
@@ -36,7 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               Handled
             </Link>
             <nav className="hidden sm:flex items-center gap-5 text-sm text-stone-600">
-              {NAV.map((item) => (
+              {nav.map((item) => (
                 <Link key={item.href} href={item.href} className="hover:text-accent-600 transition-colors">
                   {item.label}
                 </Link>
@@ -53,7 +56,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </div>
         <nav className="flex sm:hidden items-center gap-4 text-sm text-stone-600 px-4 pb-3 overflow-x-auto">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <Link key={item.href} href={item.href} className="hover:text-accent-600 whitespace-nowrap">
               {item.label}
             </Link>

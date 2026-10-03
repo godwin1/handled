@@ -7,9 +7,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { extractDocument } from "@/lib/extraction";
+import { canEdit, requireEdit } from "@/lib/permissions";
+import { logAudit } from "@/lib/audit";
 
 export async function uploadDocument(_prevState: { error?: string } | undefined, formData: FormData) {
   const user = await requireUser();
+  if (!canEdit(user, "documents")) {
+    return { error: "You don't have permission to upload documents." };
+  }
   const file = formData.get("file") as File | null;
   const personId = String(formData.get("personId") || "") || null;
   const assetId = String(formData.get("assetId") || "") || null;
@@ -56,6 +61,16 @@ export async function uploadDocument(_prevState: { error?: string } | undefined,
     },
   });
 
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "created",
+    category: "documents",
+    entityLabel: extraction.title,
+    detail: "uploaded, pending review",
+  });
+
   revalidatePath("/documents");
   redirect(`/documents/${document.id}`);
 }
@@ -66,6 +81,9 @@ export async function confirmDocument(
   formData: FormData
 ) {
   const user = await requireUser();
+  if (!canEdit(user, "documents")) {
+    return { error: "You don't have permission to edit documents." };
+  }
 
   const title = String(formData.get("title") || "").trim();
   const type = String(formData.get("type") || "other");
@@ -120,6 +138,16 @@ export async function confirmDocument(
     });
   }
 
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "updated",
+    category: "documents",
+    entityLabel: document.title,
+    detail: "confirmed",
+  });
+
   revalidatePath("/documents");
   revalidatePath("/dashboard");
   revalidatePath("/tasks");
@@ -128,11 +156,22 @@ export async function confirmDocument(
 
 export async function deleteDocument(id: string) {
   const user = await requireUser();
+  requireEdit(user, "documents");
+
   const document = await prisma.document.findFirst({ where: { id, householdId: user.householdId } });
   if (!document) return;
 
   await prisma.document.delete({ where: { id } });
   await del(document.fileUrl).catch(() => {});
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "deleted",
+    category: "documents",
+    entityLabel: document.title,
+  });
 
   revalidatePath("/documents");
 }

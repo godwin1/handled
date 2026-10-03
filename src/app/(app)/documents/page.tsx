@@ -1,11 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
 import { UploadForm } from "@/components/UploadForm";
+import { canEdit, canView } from "@/lib/permissions";
 
 export default async function DocumentsPage() {
   const user = await requireUser();
+  if (!canView(user, "documents")) redirect("/dashboard");
+  const editable = canEdit(user, "documents");
+
   const [documents, people, assets, accounts] = await Promise.all([
     prisma.document.findMany({
       where: { householdId: user.householdId },
@@ -25,10 +30,12 @@ export default async function DocumentsPage() {
     <div className="space-y-8">
       <h1 className="font-display text-2xl font-medium text-stone-900">Documents</h1>
 
+      {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Upload a document</h2>
         <UploadForm people={people} assets={assets} accounts={accounts} />
       </section>
+      )}
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         {documents.length === 0 ? (

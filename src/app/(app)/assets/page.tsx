@@ -1,12 +1,17 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAsset, deleteAsset } from "@/lib/actions/assets";
+import { canEdit, canView } from "@/lib/permissions";
 
 const TYPES = ["home", "rental", "car", "scooter", "phone", "other"];
 
 export default async function AssetsPage() {
   const user = await requireUser();
+  if (!canView(user, "assets")) redirect("/dashboard");
+  const editable = canEdit(user, "assets");
+
   const [assets, people] = await Promise.all([
     prisma.asset.findMany({
       where: { householdId: user.householdId },
@@ -35,22 +40,25 @@ export default async function AssetsPage() {
                     {asset.details && ` · ${asset.details}`}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Link href={`/assets/${asset.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
-                    Edit
-                  </Link>
-                  <form action={deleteAsset.bind(null, asset.id)}>
-                    <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
-                      Remove
-                    </button>
-                  </form>
-                </div>
+                {editable && (
+                  <div className="flex items-center gap-3">
+                    <Link href={`/assets/${asset.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
+                      Edit
+                    </Link>
+                    <form action={deleteAsset.bind(null, asset.id)}>
+                      <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                        Remove
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </section>
 
+      {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Add an asset</h2>
         <form action={createAsset} className="flex flex-wrap items-end gap-3">
@@ -88,6 +96,7 @@ export default async function AssetsPage() {
           </button>
         </form>
       </section>
+      )}
     </div>
   );
 }

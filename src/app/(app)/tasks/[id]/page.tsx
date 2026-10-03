@@ -1,13 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
 import { addComment, deleteTask, toggleTaskStatus } from "@/lib/actions/tasks";
+import { canEdit, canView } from "@/lib/permissions";
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
+  if (!canView(user, "tasks")) redirect("/dashboard");
+  const editable = canEdit(user, "tasks");
 
   const task = await prisma.task.findFirst({
     where: { id, householdId: user.householdId },
@@ -37,16 +40,18 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           <h1 className={`font-display text-xl font-medium ${done ? "text-stone-400 line-through" : "text-stone-900"}`}>
             {task.title}
           </h1>
-          <div className="flex items-center gap-3 shrink-0">
-            <Link href={`/tasks/${task.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
-              Edit
-            </Link>
-            <form action={deleteTask.bind(null, task.id)}>
-              <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
-                Delete
-              </button>
-            </form>
-          </div>
+          {editable && (
+            <div className="flex items-center gap-3 shrink-0">
+              <Link href={`/tasks/${task.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
+                Edit
+              </Link>
+              <form action={deleteTask.bind(null, task.id)}>
+                <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                  Delete
+                </button>
+              </form>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 text-xs text-stone-500">
@@ -69,16 +74,18 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           )}
         </div>
 
-        <form action={toggleTaskStatus.bind(null, task.id)}>
-          <button
-            type="submit"
-            className={`rounded-md text-sm font-medium px-4 py-1.5 ${
-              done ? "border border-stone-300 text-stone-700 hover:bg-stone-50" : "bg-accent-600 text-white hover:bg-accent-700"
-            }`}
-          >
-            {done ? "Mark as not done" : "Mark as done"}
-          </button>
-        </form>
+        {editable && (
+          <form action={toggleTaskStatus.bind(null, task.id)}>
+            <button
+              type="submit"
+              className={`rounded-md text-sm font-medium px-4 py-1.5 ${
+                done ? "border border-stone-300 text-stone-700 hover:bg-stone-50" : "bg-accent-600 text-white hover:bg-accent-700"
+              }`}
+            >
+              {done ? "Mark as not done" : "Mark as done"}
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-4">
@@ -97,17 +104,19 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
             ))}
           </div>
         )}
-        <form action={addComment.bind(null, task.id)} className="flex gap-2">
-          <input
-            name="body"
-            placeholder="e.g. Paid from joint account"
-            required
-            className="flex-1 rounded-md border border-stone-300 px-3 py-1.5 text-sm"
-          />
-          <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700">
-            Post
-          </button>
-        </form>
+        {editable && (
+          <form action={addComment.bind(null, task.id)} className="flex gap-2">
+            <input
+              name="body"
+              placeholder="e.g. Paid from joint account"
+              required
+              className="flex-1 rounded-md border border-stone-300 px-3 py-1.5 text-sm"
+            />
+            <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700">
+              Post
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

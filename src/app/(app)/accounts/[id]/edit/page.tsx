@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateAccount } from "@/lib/actions/accounts";
+import { canEdit } from "@/lib/permissions";
 
 const TYPES = ["utility", "internet", "insurance", "bank", "school", "medical", "other"];
 
 export default async function EditAccountPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
+  if (!canEdit(user, "accounts")) redirect("/accounts");
 
   const [account, people, assets] = await Promise.all([
     prisma.account.findFirst({ where: { id, householdId: user.householdId } }),

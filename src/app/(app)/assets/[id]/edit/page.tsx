@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateAsset } from "@/lib/actions/assets";
+import { canEdit } from "@/lib/permissions";
 
 const TYPES = ["home", "rental", "car", "scooter", "phone", "other"];
 
 export default async function EditAssetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
+  if (!canEdit(user, "assets")) redirect("/assets");
 
   const [asset, people] = await Promise.all([
     prisma.asset.findFirst({ where: { id, householdId: user.householdId } }),

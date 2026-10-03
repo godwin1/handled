@@ -1,12 +1,17 @@
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TaskRow } from "@/components/TaskRow";
 import { createTask } from "@/lib/actions/tasks";
+import { canEdit, canView } from "@/lib/permissions";
 
 const TASK_TYPES = ["pay", "renew", "cancel", "book", "submit", "call", "other"];
 
 export default async function TasksPage() {
   const user = await requireUser();
+  if (!canView(user, "tasks")) redirect("/dashboard");
+  const editable = canEdit(user, "tasks");
+
   const include = {
     assignee: { select: { name: true } },
     person: { select: { name: true } },
@@ -43,12 +48,13 @@ export default async function TasksPage() {
         ) : (
           <div>
             {openTasks.map((task) => (
-              <TaskRow key={task.id} task={task} />
+              <TaskRow key={task.id} task={task} editable={editable} />
             ))}
           </div>
         )}
       </section>
 
+      {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Add a task</h2>
         <form action={createTask} className="flex flex-wrap items-end gap-3">
@@ -119,13 +125,14 @@ export default async function TasksPage() {
           </button>
         </form>
       </section>
+      )}
 
       {doneTasks.length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
           <h2 className="text-sm font-medium text-stone-900 mb-1">Recently done</h2>
           <div>
             {doneTasks.map((task) => (
-              <TaskRow key={task.id} task={task} />
+              <TaskRow key={task.id} task={task} editable={editable} />
             ))}
           </div>
         </section>

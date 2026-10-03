@@ -1,12 +1,15 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteDocument } from "@/lib/actions/documents";
 import { ConfirmDocumentForm } from "@/components/ConfirmDocumentForm";
+import { canEdit, canView } from "@/lib/permissions";
 
 export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
+  if (!canView(user, "documents")) redirect("/dashboard");
+  const editable = canEdit(user, "documents");
 
   const document = await prisma.document.findFirst({
     where: { id, householdId: user.householdId },
@@ -28,11 +31,13 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
         <h1 className="font-display text-2xl font-medium text-stone-900">
           {document.status === "PENDING_REVIEW" ? "Review document" : document.title}
         </h1>
-        <form action={deleteDocument.bind(null, document.id)}>
-          <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
-            Delete
-          </button>
-        </form>
+        {editable && (
+          <form action={deleteDocument.bind(null, document.id)}>
+            <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+              Delete
+            </button>
+          </form>
+        )}
       </div>
 
       {isImage ? (
@@ -50,7 +55,13 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
         </a>
       )}
 
-      <ConfirmDocumentForm document={document} people={people} assets={assets} accounts={accounts} />
+      {editable ? (
+        <ConfirmDocumentForm document={document} people={people} assets={assets} accounts={accounts} />
+      ) : (
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 text-sm text-stone-500">
+          You have view-only access to documents.
+        </div>
+      )}
     </div>
   );
 }

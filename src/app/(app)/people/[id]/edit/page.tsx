@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updatePerson } from "@/lib/actions/people";
+import { canEdit } from "@/lib/permissions";
 
 const RELATIONSHIPS = ["self", "partner", "child", "parent", "other"];
 
@@ -14,6 +15,7 @@ function toInputDate(date: Date | null) {
 export default async function EditPersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
+  if (!canEdit(user, "people")) redirect("/people");
 
   const person = await prisma.person.findFirst({ where: { id, householdId: user.householdId } });
   if (!person) notFound();

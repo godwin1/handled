@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
+import { canView } from "@/lib/permissions";
 
 export default async function SearchPage({
   searchParams,
@@ -16,11 +17,11 @@ export default async function SearchPage({
 
   if (query.length > 0) {
     const [people, assets, accounts, documents, tasks] = await Promise.all([
-      prisma.person.findMany({ where: { householdId: user.householdId } }),
-      prisma.asset.findMany({ where: { householdId: user.householdId } }),
-      prisma.account.findMany({ where: { householdId: user.householdId } }),
-      prisma.document.findMany({ where: { householdId: user.householdId } }),
-      prisma.task.findMany({ where: { householdId: user.householdId } }),
+      canView(user, "people") ? prisma.person.findMany({ where: { householdId: user.householdId } }) : [],
+      canView(user, "assets") ? prisma.asset.findMany({ where: { householdId: user.householdId } }) : [],
+      canView(user, "accounts") ? prisma.account.findMany({ where: { householdId: user.householdId } }) : [],
+      canView(user, "documents") ? prisma.document.findMany({ where: { householdId: user.householdId } }) : [],
+      canView(user, "tasks") ? prisma.task.findMany({ where: { householdId: user.householdId } }) : [],
     ]);
 
     const matches = (...values: (string | null | undefined)[]) =>

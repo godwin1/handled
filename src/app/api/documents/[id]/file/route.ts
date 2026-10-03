@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { get } from "@vercel/blob";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canView } from "@/lib/permissions";
 
 // Documents are stored in a private Blob store (these are household IDs,
 // insurance policies, medical letters — not content to leave on a guessable
@@ -13,6 +14,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!canView(user, "documents")) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const document = await prisma.document.findFirst({

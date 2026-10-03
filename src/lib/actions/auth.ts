@@ -37,6 +37,7 @@ export async function signUp(_prevState: { error?: string } | undefined, formDat
       name,
       email,
       passwordHash,
+      isAdmin: true, // household creator starts as its admin
       household: {
         create: { name: householdName || `${name}'s household` },
       },
