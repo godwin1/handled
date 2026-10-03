@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
   const [state, formAction, pending] = useActionState(requestPasswordReset, undefined);
 
   return (
-    <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6">
       <h2 className="text-lg font-medium text-stone-900 mb-4">Reset your password</h2>
 
       {state?.sent ? (
@@ -23,13 +23,13 @@ export default function ForgotPasswordPage() {
               name="email"
               type="email"
               required
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400/50"
             />
           </div>
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-md bg-stone-900 text-white text-sm font-medium py-2 hover:bg-stone-800 disabled:opacity-60"
+            className="w-full rounded-md bg-accent-600 text-white text-sm font-medium py-2 hover:bg-accent-700 disabled:opacity-60"
           >
             {pending ? "Sending…" : "Send reset link"}
           </button>
@@ -37,7 +37,7 @@ export default function ForgotPasswordPage() {
       )}
 
       <p className="mt-4 text-sm text-stone-500 text-center">
-        <Link href="/login" className="text-stone-900 font-medium underline">
+        <Link href="/login" className="text-accent-600 font-medium underline hover:text-accent-700">
           Back to log in
         </Link>
       </p>

@@ -26,7 +26,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
         </Link>
       </div>
 
-      <section className="bg-white rounded-xl border border-stone-200 p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h1 className="text-lg font-medium text-stone-900 mb-4">Edit {person.name}</h1>
         <form action={updatePerson.bind(null, person.id)} className="space-y-4">
           <div>
@@ -47,7 +47,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
             <label className="block text-xs font-medium text-stone-600 mb-1">Date of birth</label>
             <input type="date" name="dateOfBirth" defaultValue={toInputDate(person.dateOfBirth)} className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
           </div>
-          <button type="submit" className="rounded-md bg-stone-900 text-white text-sm font-medium px-4 py-1.5 hover:bg-stone-800">
+          <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700">
             Save changes
           </button>
         </form>

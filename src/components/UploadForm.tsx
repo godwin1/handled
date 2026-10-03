@@ -117,7 +117,7 @@ export function UploadForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-stone-900 text-white text-sm font-medium px-4 py-1.5 hover:bg-stone-800 disabled:opacity-60"
+        className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700 disabled:opacity-60"
       >
         {pending ? "Uploading…" : "Upload"}
       </button>

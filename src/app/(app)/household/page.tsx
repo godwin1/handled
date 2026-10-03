@@ -21,11 +21,11 @@ export default async function HouseholdPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-semibold text-stone-900">{user.household.name}</h1>
+        <h1 className="font-display text-2xl font-medium text-stone-900">{user.household.name}</h1>
         <p className="text-sm text-stone-500 mt-1">Everyone here shares the same dashboard, tasks, and documents.</p>
       </div>
 
-      <section className="bg-white rounded-xl border border-stone-200 p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Members</h2>
         <div className="divide-y divide-stone-100">
           {members.map((m) => (
@@ -41,7 +41,7 @@ export default async function HouseholdPage() {
         </div>
       </section>
 
-      <section className="bg-white rounded-xl border border-stone-200 p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-1">Invite someone</h2>
         <p className="text-xs text-stone-500 mb-3">
           Create a link and send it to them yourself (text, email, however). It works once and expires in 7 days.
@@ -50,7 +50,7 @@ export default async function HouseholdPage() {
       </section>
 
       {pendingInvites.length > 0 && (
-        <section className="bg-white rounded-xl border border-stone-200 p-5">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
           <h2 className="text-sm font-medium text-stone-900 mb-3">Pending invites</h2>
           <div className="divide-y divide-stone-100">
             {pendingInvites.map((invite) => (

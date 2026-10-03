@@ -47,7 +47,7 @@ export default async function SearchPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold text-stone-900">Search</h1>
+      <h1 className="font-display text-2xl font-medium text-stone-900">Search</h1>
 
       <form method="GET" className="flex gap-2">
         <input
@@ -57,13 +57,13 @@ export default async function SearchPage({
           className="flex-1 rounded-md border border-stone-300 px-3 py-2 text-sm"
           autoFocus
         />
-        <button type="submit" className="rounded-md bg-stone-900 text-white text-sm font-medium px-4 py-2 hover:bg-stone-800">
+        <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-2 hover:bg-accent-700">
           Search
         </button>
       </form>
 
       {query.length > 0 && (
-        <section className="bg-white rounded-xl border border-stone-200 p-5">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
           {results.length === 0 ? (
             <p className="text-sm text-stone-400">No matches for &ldquo;{q}&rdquo;.</p>
           ) : (

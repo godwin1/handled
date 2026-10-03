@@ -18,9 +18,9 @@ export default async function AssetsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-semibold text-stone-900">Assets</h1>
+      <h1 className="font-display text-2xl font-medium text-stone-900">Assets</h1>
 
-      <section className="bg-white rounded-xl border border-stone-200 p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         {assets.length === 0 ? (
           <p className="text-sm text-stone-400">No assets added yet.</p>
         ) : (
@@ -51,7 +51,7 @@ export default async function AssetsPage() {
         )}
       </section>
 
-      <section className="bg-white rounded-xl border border-stone-200 p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Add an asset</h2>
         <form action={createAsset} className="flex flex-wrap items-end gap-3">
           <div>
@@ -83,7 +83,7 @@ export default async function AssetsPage() {
             <label className="block text-xs font-medium text-stone-600 mb-1">Details</label>
             <input name="details" placeholder="optional" className="rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
           </div>
-          <button type="submit" className="rounded-md bg-stone-900 text-white text-sm font-medium px-4 py-1.5 hover:bg-stone-800">
+          <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700">
             Add
           </button>
         </form>

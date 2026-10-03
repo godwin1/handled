@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf6ef;
+  --foreground: #2a211a;
+
+  /* Warm accent (terracotta) - primary actions, links, the wordmark */
+  --color-accent-50: #fdf3ee;
+  --color-accent-100: #fbe4d8;
+  --color-accent-400: #d08362;
+  --color-accent-500: #bf6a46;
+  --color-accent-600: #a8532f;
+  --color-accent-700: #864228;
+
+  /* Muted sage - done/confirmed states */
+  --color-sage-100: #e7ebe1;
+  --color-sage-600: #5f7a52;
+  --color-sage-700: #4c6342;
+
+  /* Warm rust - overdue/urgent, softer than a pure red */
+  --color-rust-100: #f6e4de;
+  --color-rust-600: #b2492f;
+  --color-rust-700: #943a24;
 }
 
 @theme inline {
@@ -10,10 +28,31 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+
+  --color-accent-50: var(--color-accent-50);
+  --color-accent-100: var(--color-accent-100);
+  --color-accent-400: var(--color-accent-400);
+  --color-accent-500: var(--color-accent-500);
+  --color-accent-600: var(--color-accent-600);
+  --color-accent-700: var(--color-accent-700);
+
+  --color-sage-100: var(--color-sage-100);
+  --color-sage-600: var(--color-sage-600);
+  --color-sage-700: var(--color-sage-700);
+
+  --color-rust-100: var(--color-rust-100);
+  --color-rust-600: var(--color-rust-600);
+  --color-rust-700: var(--color-rust-700);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
 }

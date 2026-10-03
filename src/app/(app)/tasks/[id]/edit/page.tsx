@@ -31,7 +31,7 @@ export default async function EditTaskPage({ params }: { params: Promise<{ id: s
         </Link>
       </div>
 
-      <section className="bg-white rounded-xl border border-stone-200 p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         <h1 className="text-lg font-medium text-stone-900 mb-4">Edit task</h1>
         <form action={updateTask.bind(null, task.id)} className="space-y-4">
           <div>
@@ -100,7 +100,7 @@ export default async function EditTaskPage({ params }: { params: Promise<{ id: s
               </select>
             </div>
           </div>
-          <button type="submit" className="rounded-md bg-stone-900 text-white text-sm font-medium px-4 py-1.5 hover:bg-stone-800">
+          <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700">
             Save changes
           </button>
         </form>

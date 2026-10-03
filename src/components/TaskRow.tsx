@@ -39,7 +39,7 @@ export function TaskRow({ task }: { task: TaskWithRelations }) {
           type="submit"
           aria-label={done ? "Mark as not done" : "Mark as done"}
           className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${
-            done ? "bg-stone-900 border-stone-900 text-white" : "border-stone-300 hover:border-stone-500"
+            done ? "bg-sage-600 border-sage-600 text-white" : "border-stone-300 hover:border-accent-400"
           }`}
         >
           {done && (
@@ -66,7 +66,7 @@ export function TaskRow({ task }: { task: TaskWithRelations }) {
         </div>
       </div>
 
-      <span className={`text-xs font-medium shrink-0 ${due.overdue && !done ? "text-red-600" : "text-stone-500"}`}>
+      <span className={`text-xs font-medium shrink-0 ${due.overdue && !done ? "text-rust-600" : "text-stone-500"}`}>
         {done ? "Done" : due.label}
       </span>
     </div>

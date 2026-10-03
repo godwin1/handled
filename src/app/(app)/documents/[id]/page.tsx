@@ -25,7 +25,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
   return (
     <div className="space-y-6 max-w-2xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-stone-900">
+        <h1 className="font-display text-2xl font-medium text-stone-900">
           {document.status === "PENDING_REVIEW" ? "Review document" : document.title}
         </h1>
         <form action={deleteDocument.bind(null, document.id)}>
@@ -36,7 +36,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       </div>
 
       {isImage ? (
-        <div className="relative w-full max-h-80 overflow-hidden rounded-xl border border-stone-200 bg-stone-100">
+        <div className="relative w-full max-h-80 overflow-hidden rounded-2xl border border-stone-200/70 shadow-sm bg-stone-100">
           {/* Plain <img>, not next/image: the file lives behind an authenticated
               route, and the browser's own cookie-bearing request is what makes
               that work — Next's server-side image optimizer would fetch it

@@ -15,14 +15,14 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
   const invalid = !invite || !!invite.acceptedAt || invite.expiresAt < new Date();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-stone-900">Handled</h1>
-          <p className="mt-1 text-sm text-stone-500">Nothing important slips.</p>
+        <div className="mb-10 text-center">
+          <h1 className="font-display text-4xl font-medium text-accent-600">Handled</h1>
+          <p className="mt-2 text-sm text-stone-500">Nothing important slips.</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm">
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6">
           {invalid ? (
             <>
               <h2 className="text-lg font-medium text-stone-900 mb-2">Invite not valid</h2>
@@ -38,7 +38,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
                 You&apos;re signed in as {currentUser.email}. Log out first to accept this invite to join{" "}
                 {invite.household.name}.
               </p>
-              <Link href="/dashboard" className="mt-4 inline-block text-sm text-stone-900 underline">
+              <Link href="/dashboard" className="mt-4 inline-block text-sm text-accent-600 underline hover:text-accent-700">
                 Go to your dashboard
               </Link>
             </>

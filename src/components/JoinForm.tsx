@@ -14,7 +14,7 @@ export function JoinForm({ token, prefilledEmail }: { token: string; prefilledEm
         <input
           name="name"
           required
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400/50"
         />
       </div>
       {prefilledEmail ? (
@@ -33,7 +33,7 @@ export function JoinForm({ token, prefilledEmail }: { token: string; prefilledEm
             name="email"
             type="email"
             required
-            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400/50"
           />
         </div>
       )}
@@ -44,14 +44,14 @@ export function JoinForm({ token, prefilledEmail }: { token: string; prefilledEm
           type="password"
           required
           minLength={8}
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400/50"
         />
       </div>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-md bg-stone-900 text-white text-sm font-medium py-2 hover:bg-stone-800 disabled:opacity-60"
+        className="w-full rounded-md bg-accent-600 text-white text-sm font-medium py-2 hover:bg-accent-700 disabled:opacity-60"
       >
         {pending ? "Joining…" : "Join household"}
       </button>

@@ -61,7 +61,7 @@ export function ConfirmDocumentForm({
     toInputDate(fallbackTaskDue);
 
   return (
-    <form action={formAction} className="bg-white rounded-xl border border-stone-200 p-5 space-y-4">
+    <form action={formAction} className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-4">
       <p className="text-xs text-stone-500">
         {isPending
           ? "We guessed a few fields from the filename — check them and confirm."
@@ -185,7 +185,7 @@ export function ConfirmDocumentForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-stone-900 text-white text-sm font-medium px-4 py-2 hover:bg-stone-800 disabled:opacity-60"
+        className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-2 hover:bg-accent-700 disabled:opacity-60"
       >
         {pending ? "Saving…" : isPending ? "Confirm" : "Save changes"}
       </button>
