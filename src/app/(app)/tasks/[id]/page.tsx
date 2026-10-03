@@ -37,11 +37,16 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
           <h1 className={`text-lg font-semibold ${done ? "text-stone-400 line-through" : "text-stone-900"}`}>
             {task.title}
           </h1>
-          <form action={deleteTask.bind(null, task.id)}>
-            <button type="submit" className="text-xs text-stone-400 hover:text-red-600 shrink-0">
-              Delete
-            </button>
-          </form>
+          <div className="flex items-center gap-3 shrink-0">
+            <Link href={`/tasks/${task.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
+              Edit
+            </Link>
+            <form action={deleteTask.bind(null, task.id)}>
+              <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                Delete
+              </button>
+            </form>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-stone-500">

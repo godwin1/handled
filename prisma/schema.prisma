@@ -32,10 +32,22 @@ model User {
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
-  assignedTasks Task[]    @relation("TaskAssignee")
-  comments      Comment[]
-  sessions      Session[]
-  sentInvites   Invite[]
+  assignedTasks      Task[]              @relation("TaskAssignee")
+  comments           Comment[]
+  sessions           Session[]
+  sentInvites        Invite[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Invite {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAccount, deleteAccount } from "@/lib/actions/accounts";
@@ -36,11 +37,16 @@ export default async function AccountsPage() {
                     {account.asset && ` · ${account.asset.name}`}
                   </p>
                 </div>
-                <form action={deleteAccount.bind(null, account.id)}>
-                  <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
-                    Remove
-                  </button>
-                </form>
+                <div className="flex items-center gap-3">
+                  <Link href={`/accounts/${account.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
+                    Edit
+                  </Link>
+                  <form action={deleteAccount.bind(null, account.id)}>
+                    <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                      Remove
+                    </button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>

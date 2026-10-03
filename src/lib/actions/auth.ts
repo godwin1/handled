@@ -1,8 +1,19 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
+import { sendPasswordResetEmail } from "@/lib/email";
+
+const RESET_TOKEN_HOURS = 1;
+
+async function currentOrigin() {
+  const h = await headers();
+  const host = h.get("host") ?? "localhost:3000";
+  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
 
 export async function signUp(_prevState: { error?: string } | undefined, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
@@ -56,5 +67,55 @@ export async function logIn(_prevState: { error?: string } | undefined, formData
 
 export async function logOut() {
   await destroySession();
+  redirect("/login");
+}
+
+// Always returns the same generic message regardless of whether the email
+// matches an account, so this can't be used to enumerate registered emails.
+export async function requestPasswordReset(_prevState: { sent?: boolean } | undefined, formData: FormData) {
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (user) {
+    const expiresAt = new Date(Date.now() + RESET_TOKEN_HOURS * 60 * 60 * 1000);
+    const resetToken = await prisma.passwordResetToken.create({
+      data: { token: crypto.randomUUID(), userId: user.id, expiresAt },
+    });
+
+    const origin = await currentOrigin();
+    await sendPasswordResetEmail({
+      to: user.email,
+      resetUrl: `${origin}/reset-password/${resetToken.token}`,
+    });
+  }
+
+  return { sent: true };
+}
+
+export async function resetPassword(
+  token: string,
+  _prevState: { error?: string } | undefined,
+  formData: FormData
+) {
+  const password = String(formData.get("password") || "");
+  if (!password || password.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
+
+  const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } });
+  if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
+    return { error: "This reset link is no longer valid. Request a new one." };
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: resetToken.userId }, data: { passwordHash } }),
+    prisma.passwordResetToken.update({ where: { id: resetToken.id }, data: { usedAt: new Date() } }),
+    // Resetting a password is a signal the old credential may be compromised
+    // - kill every existing session rather than leaving them valid.
+    prisma.session.deleteMany({ where: { userId: resetToken.userId } }),
+  ]);
+
   redirect("/login");
 }

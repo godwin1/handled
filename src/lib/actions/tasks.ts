@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
@@ -31,6 +32,36 @@ export async function createTask(formData: FormData) {
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+}
+
+export async function updateTask(id: string, formData: FormData) {
+  const user = await requireUser();
+  const title = String(formData.get("title") || "").trim();
+  const type = String(formData.get("type") || "other");
+  const dueDateRaw = String(formData.get("dueDate") || "");
+  const assigneeId = String(formData.get("assigneeId") || "") || null;
+  const personId = String(formData.get("personId") || "") || null;
+  const assetId = String(formData.get("assetId") || "") || null;
+  const accountId = String(formData.get("accountId") || "") || null;
+
+  if (!title || !dueDateRaw) return;
+
+  await prisma.task.updateMany({
+    where: { id, householdId: user.householdId },
+    data: {
+      title,
+      type,
+      dueDate: new Date(dueDateRaw),
+      assigneeId,
+      personId,
+      assetId,
+      accountId,
+    },
+  });
+
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  redirect(`/tasks/${id}`);
 }
 
 export async function toggleTaskStatus(id: string) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 
@@ -22,6 +23,23 @@ export async function createPerson(formData: FormData) {
   });
 
   revalidatePath("/people");
+}
+
+export async function updatePerson(id: string, formData: FormData) {
+  const user = await requireUser();
+  const name = String(formData.get("name") || "").trim();
+  const relationship = String(formData.get("relationship") || "other");
+  const dobRaw = String(formData.get("dateOfBirth") || "");
+
+  if (!name) return;
+
+  await prisma.person.updateMany({
+    where: { id, householdId: user.householdId },
+    data: { name, relationship, dateOfBirth: dobRaw ? new Date(dobRaw) : null },
+  });
+
+  revalidatePath("/people");
+  redirect("/people");
 }
 
 export async function deletePerson(id: string) {

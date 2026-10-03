@@ -84,6 +84,32 @@ export async function sendDigestEmail(params: {
   return result;
 }
 
+export async function sendPasswordResetEmail(params: { to: string; resetUrl: string }) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">Reset your password</h2>
+      <p style="font-size:14px;color:#78716c;">
+        Someone requested a password reset for your Handled account. If this wasn't you, ignore this email.
+      </p>
+      <p style="margin-top:20px;">
+        <a href="${params.resetUrl}" style="background:#1c1917;color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;">Reset password</a>
+      </p>
+      <p style="color:#a8a29e;font-size:12px;margin-top:24px;">This link expires in 1 hour.</p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: "Reset your Handled password",
+    html,
+  });
+}
+
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPerson, deletePerson } from "@/lib/actions/people";
@@ -29,11 +30,16 @@ export default async function PeoplePage() {
                     {person.dateOfBirth && ` · born ${person.dateOfBirth.toLocaleDateString()}`}
                   </p>
                 </div>
-                <form action={deletePerson.bind(null, person.id)}>
-                  <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
-                    Remove
-                  </button>
-                </form>
+                <div className="flex items-center gap-3">
+                  <Link href={`/people/${person.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
+                    Edit
+                  </Link>
+                  <form action={deletePerson.bind(null, person.id)}>
+                    <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                      Remove
+                    </button>
+                  </form>
+                </div>
               </div>
             ))}
           </div>
