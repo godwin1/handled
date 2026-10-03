@@ -1,19 +1,12 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { currentOrigin } from "@/lib/url";
 
 const RESET_TOKEN_HOURS = 1;
-
-async function currentOrigin() {
-  const h = await headers();
-  const host = h.get("host") ?? "localhost:3000";
-  const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
-}
 
 export async function signUp(_prevState: { error?: string } | undefined, formData: FormData) {
   const name = String(formData.get("name") || "").trim();

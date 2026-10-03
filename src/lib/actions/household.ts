@@ -7,13 +7,15 @@ import { requireUser } from "@/lib/auth";
 import { createSession, hashPassword } from "@/lib/auth";
 import { requireAdmin, type Category } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendInviteEmail } from "@/lib/email";
+import { currentOrigin } from "@/lib/url";
 
 const INVITE_DAYS = 7;
 
 export async function createInvite(
   _prevState: { token?: string; error?: string } | undefined,
   formData: FormData
-): Promise<{ token: string } | { error: string }> {
+): Promise<{ token: string; emailSent?: boolean } | { error: string }> {
   const user = await requireUser();
   const email = String(formData.get("email") || "").trim().toLowerCase() || null;
 
@@ -46,7 +48,23 @@ export async function createInvite(
   });
 
   revalidatePath("/household");
-  return { token: invite.token };
+
+  let emailSent: boolean | undefined;
+  if (email) {
+    const origin = await currentOrigin();
+    const result = await sendInviteEmail({
+      to: email,
+      inviterName: user.name,
+      householdName: user.household.name,
+      inviteUrl: `${origin}/join/${invite.token}`,
+    }).catch((err) => {
+      console.error("Failed to send invite email:", err);
+      return null;
+    });
+    emailSent = !!result && !("skipped" in result) && !result.error;
+  }
+
+  return { token: invite.token, emailSent };
 }
 
 export async function revokeInvite(id: string) {

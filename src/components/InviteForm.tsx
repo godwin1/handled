@@ -9,6 +9,7 @@ export function InviteForm() {
 
   const token = state && "token" in state ? state.token : null;
   const error = state && "error" in state ? state.error : null;
+  const emailSent = state && "emailSent" in state ? state.emailSent : undefined;
   const link = token && typeof window !== "undefined" ? `${window.location.origin}/join/${token}` : null;
 
   return (
@@ -35,19 +36,29 @@ export function InviteForm() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {link && (
-        <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-md px-3 py-2">
-          <input readOnly value={link} className="flex-1 bg-transparent text-sm text-stone-700 outline-none" />
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText(link);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 1500);
-            }}
-            className="text-xs font-medium text-stone-600 hover:text-stone-900 shrink-0"
-          >
-            {copied ? "Copied!" : "Copy"}
-          </button>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-md px-3 py-2">
+            <input readOnly value={link} className="flex-1 bg-transparent text-sm text-stone-700 outline-none" />
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(link);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+              className="text-xs font-medium text-stone-600 hover:text-stone-900 shrink-0"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </button>
+          </div>
+          {emailSent === true && (
+            <p className="text-xs text-sage-700">We also emailed this link to them.</p>
+          )}
+          {emailSent === false && (
+            <p className="text-xs text-amber-700">
+              We tried to email this link but it didn&apos;t go through — share the link above directly instead.
+            </p>
+          )}
         </div>
       )}
     </div>
