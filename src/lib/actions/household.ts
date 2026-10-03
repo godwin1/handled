@@ -141,6 +141,37 @@ export async function acceptInvite(
   redirect("/dashboard");
 }
 
+// Comments the removed member left on tasks are deleted along with their
+// account (cascade on Comment.user) - household history from before the
+// removal is not preserved beyond the audit log entry below.
+export async function removeMember(targetUserId: string) {
+  const user = await requireUser();
+  requireAdmin(user);
+
+  if (targetUserId === user.id) return; // use a different flow to leave a household yourself
+
+  const target = await prisma.user.findFirst({ where: { id: targetUserId, householdId: user.householdId } });
+  if (!target) return;
+
+  if (target.isAdmin) {
+    const adminCount = await prisma.user.count({ where: { householdId: user.householdId, isAdmin: true } });
+    if (adminCount <= 1) return; // never leave the household with zero admins
+  }
+
+  await prisma.user.delete({ where: { id: targetUserId } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "member_removed",
+    category: "member",
+    entityLabel: target.name,
+  });
+
+  revalidatePath("/household");
+}
+
 export async function setMemberAdmin(targetUserId: string, makeAdmin: boolean) {
   const user = await requireUser();
   requireAdmin(user);

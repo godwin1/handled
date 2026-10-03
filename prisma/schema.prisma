@@ -8,6 +8,17 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// A row per throttled attempt (e.g. "login:<ip>:<email>", "reset:<email>",
+// "signup:<ip>"). No foreign keys - this is pure rate-limit bookkeeping,
+// pruned by age rather than joined against.
+model RateLimitAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
 model Household {
   id        String   @id @default(cuid())
   name      String

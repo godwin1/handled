@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { currentOrigin } from "@/lib/url";
+import { getClientIp, isRateLimited, recordAttempt } from "@/lib/rateLimit";
 
 const RESET_TOKEN_HOURS = 1;
 
@@ -13,6 +14,12 @@ export async function signUp(_prevState: { error?: string } | undefined, formDat
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
   const householdName = String(formData.get("householdName") || "").trim();
+
+  const ip = await getClientIp();
+  if (await isRateLimited(`signup:${ip}`, 5, 60)) {
+    return { error: "Too many accounts created from this connection. Please try again later." };
+  }
+  await recordAttempt(`signup:${ip}`);
 
   if (!name || !email || !password || password.length < 8) {
     return { error: "Please fill in all fields. Password must be at least 8 characters." };
@@ -45,13 +52,21 @@ export async function logIn(_prevState: { error?: string } | undefined, formData
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
 
+  const ip = await getClientIp();
+  const rateLimitKey = `login:${ip}:${email}`;
+  if (await isRateLimited(rateLimitKey, 10, 15)) {
+    return { error: "Too many failed attempts. Please wait a few minutes and try again." };
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
+    await recordAttempt(rateLimitKey);
     return { error: "Invalid email or password." };
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
+    await recordAttempt(rateLimitKey);
     return { error: "Invalid email or password." };
   }
 
@@ -68,6 +83,14 @@ export async function logOut() {
 // matches an account, so this can't be used to enumerate registered emails.
 export async function requestPasswordReset(_prevState: { sent?: boolean } | undefined, formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
+
+  const rateLimitKey = `reset:${email}`;
+  if (await isRateLimited(rateLimitKey, 3, 15)) {
+    // Same generic response as success - don't reveal that a limit exists
+    // for this address, same enumeration-avoidance reasoning as below.
+    return { sent: true };
+  }
+  await recordAttempt(rateLimitKey);
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {

@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { InviteForm } from "@/components/InviteForm";
 import { PermissionSelect } from "@/components/PermissionSelect";
+import { RemoveMemberButton } from "@/components/RemoveMemberButton";
 import { revokeInvite, setMemberAdmin } from "@/lib/actions/household";
 import { CATEGORIES, getLevel } from "@/lib/permissions";
 
@@ -60,16 +61,21 @@ export default async function HouseholdPage() {
                     <p className="text-xs text-stone-500">{m.email}</p>
                   </div>
                   {user.isAdmin && (
-                    <form action={setMemberAdmin.bind(null, m.id, !m.isAdmin)}>
-                      <button
-                        type="submit"
-                        disabled={m.isAdmin && !canDemote}
-                        title={m.isAdmin && !canDemote ? "A household needs at least one admin" : undefined}
-                        className="text-xs text-stone-400 hover:text-accent-600 disabled:opacity-40 disabled:hover:text-stone-400"
-                      >
-                        {m.isAdmin ? "Remove admin" : "Make admin"}
-                      </button>
-                    </form>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <form action={setMemberAdmin.bind(null, m.id, !m.isAdmin)}>
+                        <button
+                          type="submit"
+                          disabled={m.isAdmin && !canDemote}
+                          title={m.isAdmin && !canDemote ? "A household needs at least one admin" : undefined}
+                          className="text-xs text-stone-400 hover:text-accent-600 disabled:opacity-40 disabled:hover:text-stone-400"
+                        >
+                          {m.isAdmin ? "Remove admin" : "Make admin"}
+                        </button>
+                      </form>
+                      {m.id !== user.id && (!m.isAdmin || canDemote) && (
+                        <RemoveMemberButton userId={m.id} name={m.name} />
+                      )}
+                    </div>
                   )}
                 </div>
 

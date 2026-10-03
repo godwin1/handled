@@ -9,6 +9,7 @@ const ACTION_LABELS: Record<string, string> = {
   updated: "updated",
   deleted: "deleted",
   member_joined: "joined the household",
+  member_removed: "removed from the household",
   member_admin_changed: "admin status changed",
   member_permission_changed: "permissions changed",
   invite_created: "invite created",
