@@ -179,6 +179,37 @@ export async function sendLoginAlertEmail(params: {
   });
 }
 
+export async function sendTwoFactorRecoveryEmail(params: { to: string; recoveryUrl: string }) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">Turn off two-factor authentication</h2>
+      <p style="font-size:14px;color:#78716c;">
+        You requested this because you lost access to your authenticator app and backup codes. Clicking the link
+        below will disable two-factor authentication on your account so you can sign back in.
+      </p>
+      <p style="margin-top:20px;">
+        <a href="${params.recoveryUrl}" style="background:#1c1917;color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;">Disable two-factor authentication</a>
+      </p>
+      <p style="color:#78716c;font-size:13px;margin-top:20px;">
+        If you didn't request this, ignore this email — your account stays protected and this link will simply
+        expire.
+      </p>
+      <p style="color:#a8a29e;font-size:12px;margin-top:12px;">This link expires in 1 hour and works once.</p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: "Disable two-factor authentication on your Handled account",
+    html,
+  });
+}
+
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }

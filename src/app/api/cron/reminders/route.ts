@@ -25,15 +25,33 @@ function dueLabel(dueDate: Date, today: Date) {
   return `due in ${diffDays}d`;
 }
 
+// Everything here only ever accumulates (rate-limit bookkeeping, expired
+// one-time tokens) - nothing else reads old rows, so a day-old cutoff is
+// safe even though the windows themselves are much shorter (max 60 min).
+async function cleanupExpiredRows() {
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const now = new Date();
+
+  await Promise.all([
+    prisma.rateLimitAttempt.deleteMany({ where: { createdAt: { lt: dayAgo } } }),
+    prisma.pendingTwoFactor.deleteMany({ where: { expiresAt: { lt: now } } }),
+    prisma.passwordResetToken.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { usedAt: { not: null } }] } }),
+    prisma.invite.deleteMany({ where: { OR: [{ expiresAt: { lt: now } }, { acceptedAt: { not: null } }] } }),
+  ]);
+}
+
 // Triggered daily by Vercel Cron (see vercel.json). Sends each household
 // member a digest of what's overdue/due this week, mirroring the dashboard's
 // "This week" section - re-sent daily for as long as it's still true, rather
 // than tracked per-reminder, so there's no extra state to keep in sync.
+// Also doubles as daily housekeeping, pruning rows that only ever accumulate.
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await cleanupExpiredRows().catch((err) => console.error("Cron cleanup failed:", err));
 
   const today = startOfToday();
   const weekEnd = addDays(today, 7);

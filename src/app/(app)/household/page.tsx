@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { InviteForm } from "@/components/InviteForm";
 import { PermissionSelect } from "@/components/PermissionSelect";
 import { RemoveMemberButton } from "@/components/RemoveMemberButton";
+import { ResetTwoFactorButton } from "@/components/ResetTwoFactorButton";
 import { revokeInvite, setMemberAdmin } from "@/lib/actions/household";
 import { CATEGORIES, getLevel } from "@/lib/permissions";
 
@@ -13,7 +14,7 @@ export default async function HouseholdPage() {
   const [members, pendingInvites, adminCount] = await Promise.all([
     prisma.user.findMany({
       where: { householdId: user.householdId },
-      select: { id: true, name: true, email: true, createdAt: true, isAdmin: true, permissions: true },
+      select: { id: true, name: true, email: true, createdAt: true, isAdmin: true, permissions: true, totpEnabled: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.invite.findMany({
@@ -87,6 +88,12 @@ export default async function HouseholdPage() {
                         <PermissionSelect userId={m.id} category={c.key} level={getLevel(m, c.key)} />
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {user.isAdmin && m.id !== user.id && m.totpEnabled && (
+                  <div className="pl-0.5">
+                    <ResetTwoFactorButton userId={m.id} name={m.name} />
                   </div>
                 )}
               </div>

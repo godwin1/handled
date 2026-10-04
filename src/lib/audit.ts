@@ -9,6 +9,7 @@ type AuditAction =
   | "member_removed"
   | "member_admin_changed"
   | "member_permission_changed"
+  | "member_2fa_reset"
   | "invite_created"
   | "invite_revoked";
 

@@ -65,6 +65,7 @@ model User {
   auditLogs           AuditLog[]
   backupCodes         BackupCode[]
   pendingTwoFactors   PendingTwoFactor[]
+  twoFactorRecoveryTokens TwoFactorRecoveryToken[]
 }
 
 // category: people | assets | accounts | documents | tasks
@@ -102,6 +103,21 @@ model AuditLog {
   userId     String?
   user       User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userNameAtTime String
+}
+
+// Self-service recovery for someone who's completed the password step (so
+// a PendingTwoFactor already proves they know the password) but lost both
+// their authenticator and backup codes. Separate from admin-assisted reset
+// (household.ts) which covers everyone except a locked-out sole admin.
+model TwoFactorRecoveryToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model PasswordResetToken {

@@ -144,6 +144,36 @@ export async function acceptInvite(
 // Comments the removed member left on tasks are deleted along with their
 // account (cascade on Comment.user) - household history from before the
 // removal is not preserved beyond the audit log entry below.
+// Lets an admin unlock a member who's lost both their authenticator and
+// backup codes - there's otherwise no way back in, since disabling 2FA
+// normally requires being logged in, which requires 2FA. Doesn't help a
+// locked-out sole admin (nobody else to ask) - that's what the email-based
+// self-recovery flow in twoFactor.ts is for.
+export async function adminResetMemberTwoFactor(targetUserId: string) {
+  const user = await requireUser();
+  requireAdmin(user);
+
+  const target = await prisma.user.findFirst({ where: { id: targetUserId, householdId: user.householdId } });
+  if (!target || !target.totpEnabled) return;
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: targetUserId }, data: { totpEnabled: false, totpSecret: null } }),
+    prisma.backupCode.deleteMany({ where: { userId: targetUserId } }),
+  ]);
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "member_2fa_reset",
+    category: "member",
+    entityLabel: target.name,
+    detail: "reset by admin",
+  });
+
+  revalidatePath("/household");
+}
+
 export async function removeMember(targetUserId: string) {
   const user = await requireUser();
   requireAdmin(user);
