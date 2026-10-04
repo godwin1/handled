@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendDigestEmail, type DigestItem } from "@/lib/email";
+import { sendPushToUser } from "@/lib/push";
 
 function startOfToday() {
   const d = new Date();
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       name: true,
-      members: { select: { email: true, name: true } },
+      members: { select: { id: true, email: true, name: true } },
       tasks: {
         where: { status: "OPEN", dueDate: { lt: weekEnd } },
         select: { title: true, dueDate: true },
@@ -91,6 +92,8 @@ export async function GET(request: NextRequest) {
       continue;
     }
 
+    const totalCount = overdueItems.length + dueThisWeekItems.length;
+
     for (const member of household.members) {
       const result = await sendDigestEmail({
         to: member.email,
@@ -109,6 +112,18 @@ export async function GET(request: NextRequest) {
       } else {
         sent++;
       }
+
+      const bodyParts = [
+        overdueItems.length > 0 && `${overdueItems.length} overdue`,
+        dueThisWeekItems.length > 0 && `${dueThisWeekItems.length} due this week`,
+        pendingDocuments > 0 && `${pendingDocuments} document${pendingDocuments === 1 ? "" : "s"} to review`,
+      ].filter(Boolean);
+
+      await sendPushToUser(member.id, {
+        title: `${household.name}: ${totalCount} thing${totalCount === 1 ? "" : "s"} due this week`,
+        body: bodyParts.join(" · "),
+        url: `${appUrl}/dashboard`,
+      }).catch((err) => console.error(`Push to ${member.email} failed:`, err));
     }
   }
 

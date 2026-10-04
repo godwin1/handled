@@ -67,6 +67,20 @@ model User {
   pendingTwoFactors   PendingTwoFactor[]
   twoFactorRecoveryTokens TwoFactorRecoveryToken[]
   documentShareLinks  DocumentShareLink[]
+  pushTokens          PushToken[]
+}
+
+// platform: android | ios. A user can have several (multiple devices);
+// tokens are pruned lazily when FCM reports one as no-longer-registered,
+// rather than tracked for staleness proactively.
+model PushToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  platform  String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // category: people | assets | accounts | documents | tasks

@@ -2,6 +2,8 @@
 
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { PushNotifications } from "@capacitor/push-notifications";
+import { registerPushToken } from "@/lib/actions/push";
 
 export type ReminderTask = {
   id: string;
@@ -116,4 +118,44 @@ export async function syncReminders(tasks: ReminderTask[]) {
   }
 
   saveScheduledMap(scheduledMap);
+}
+
+let pushListenersAttached = false;
+
+/**
+ * Requests push permission and registers this device's FCM token with the
+ * server, so it can receive server-triggered pushes (daily digest, task
+ * assignment) in addition to the locally-scheduled reminders above - those
+ * only fire for due dates already known at the device's last sync, while
+ * these can reach a device that hasn't opened the app in a while.
+ * No-ops outside a native Capacitor shell.
+ */
+export async function syncPushRegistration() {
+  if (!Capacitor.isNativePlatform()) return;
+
+  const permission = await PushNotifications.checkPermissions();
+  if (permission.receive !== "granted") {
+    const req = await PushNotifications.requestPermissions();
+    if (req.receive !== "granted") return;
+  }
+
+  if (!pushListenersAttached) {
+    pushListenersAttached = true;
+
+    PushNotifications.addListener("registration", (token) => {
+      const platform = Capacitor.getPlatform() === "ios" ? "ios" : "android";
+      registerPushToken(token.value, platform).catch(() => {});
+    });
+
+    PushNotifications.addListener("registrationError", (err) => {
+      console.error("Push registration failed:", err);
+    });
+
+    PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+      const url = action.notification.data?.url as string | undefined;
+      if (url) window.location.href = url;
+    });
+  }
+
+  await PushNotifications.register();
 }

@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { requireEdit } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { sendPushToUser } from "@/lib/push";
+import { currentOrigin } from "@/lib/url";
 
 const RECURRENCES = ["weekly", "monthly", "yearly"];
 
@@ -57,6 +59,15 @@ export async function createTask(formData: FormData) {
     category: "tasks",
     entityLabel: title,
   });
+
+  if (assigneeId && assigneeId !== user.id) {
+    const origin = await currentOrigin();
+    await sendPushToUser(assigneeId, {
+      title: "New task assigned to you",
+      body: `${user.name} assigned you: ${title}`,
+      url: `${origin}/tasks`,
+    }).catch((err) => console.error("Push for task assignment failed:", err));
+  }
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
