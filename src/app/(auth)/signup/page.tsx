@@ -55,6 +55,17 @@ export default function SignupPage() {
           {pending ? "Creating…" : "Create household"}
         </button>
       </form>
+      <p className="mt-4 text-xs text-stone-400 text-center">
+        By creating a household, you agree to our{" "}
+        <Link href="/terms" className="underline hover:text-stone-600">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline hover:text-stone-600">
+          Privacy Policy
+        </Link>
+        .
+      </p>
       <p className="mt-4 text-sm text-stone-500 text-center">
         Already have an account?{" "}
         <Link href="/login" className="text-accent-600 font-medium underline hover:text-accent-700">
