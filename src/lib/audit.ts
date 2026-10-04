@@ -11,7 +11,9 @@ type AuditAction =
   | "member_permission_changed"
   | "member_2fa_reset"
   | "invite_created"
-  | "invite_revoked";
+  | "invite_revoked"
+  | "document_share_created"
+  | "document_share_revoked";
 
 type AuditCategory = Category | "household" | "member";
 

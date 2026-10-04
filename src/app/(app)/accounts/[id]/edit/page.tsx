@@ -6,6 +6,12 @@ import { updateAccount } from "@/lib/actions/accounts";
 import { canEdit } from "@/lib/permissions";
 
 const TYPES = ["utility", "internet", "insurance", "bank", "school", "medical", "other"];
+const BILLING_CYCLES = [
+  { value: "monthly", label: "Monthly" },
+  { value: "weekly", label: "Weekly" },
+  { value: "yearly", label: "Yearly" },
+  { value: "one_time", label: "One-time" },
+];
 
 export default async function EditAccountPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -47,6 +53,33 @@ export default async function EditAccountPage({ params }: { params: Promise<{ id
                 </option>
               ))}
             </select>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Amount</label>
+              <input
+                name="amount"
+                type="number"
+                step="0.01"
+                defaultValue={account.amount ?? ""}
+                placeholder="optional"
+                className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Currency</label>
+              <input name="currency" defaultValue={account.currency ?? ""} placeholder="USD" className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-stone-600 mb-1">Billing cycle</label>
+              <select name="billingCycle" defaultValue={account.billingCycle ?? "monthly"} className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm">
+                {BILLING_CYCLES.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Person</label>

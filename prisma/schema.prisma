@@ -66,6 +66,7 @@ model User {
   backupCodes         BackupCode[]
   pendingTwoFactors   PendingTwoFactor[]
   twoFactorRecoveryTokens TwoFactorRecoveryToken[]
+  documentShareLinks  DocumentShareLink[]
 }
 
 // category: people | assets | accounts | documents | tasks
@@ -225,11 +226,17 @@ model Asset {
 }
 
 // type: utility | internet | insurance | bank | school | medical | other
+// billingCycle: weekly | monthly | yearly | one_time - only meaningful
+// when amount is set; drives the recurring-spend total on /accounts.
 model Account {
   id       String  @id @default(cuid())
   name     String
   provider String?
   type     String
+
+  amount       Float?
+  currency     String?
+  billingCycle String?
 
   createdAt DateTime @default(now())
 
@@ -286,11 +293,33 @@ model Document {
   accountId String?
   account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
 
-  tasks Task[]
+  tasks      Task[]
+  shareLinks DocumentShareLink[]
+}
+
+// A scoped, unauthenticated read-only link to one document - for sharing
+// with someone outside the household (an accountant, a landlord) without
+// inviting them in. Token is the only credential; revokedAt/expiresAt are
+// checked on every access, not just at creation.
+model DocumentShareLink {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdByUserId String
+  createdBy       User   @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
 }
 
 // type: pay | renew | cancel | book | submit | call | other
 // status: OPEN | DONE | SNOOZED
+// recurrence: null (one-off) | weekly | monthly | yearly. Marking a
+// recurring task done spawns the next occurrence rather than editing this
+// row in place, so completed history stays intact.
 model Task {
   id     String @id @default(cuid())
   title  String
@@ -299,6 +328,7 @@ model Task {
 
   dueDate     DateTime
   completedAt DateTime?
+  recurrence  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

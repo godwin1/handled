@@ -8,6 +8,7 @@ type TaskWithRelations = {
   type: string;
   status: string;
   dueDate: Date;
+  recurrence?: string | null;
   assignee: { name: string } | null;
   person: { name: string } | null;
   asset: { name: string } | null;
@@ -76,6 +77,7 @@ export function TaskRow({ task, editable = true }: { task: TaskWithRelations; ed
         </Link>
         <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-500">
           <Badge label={task.type} />
+          {task.recurrence && <span title={`Repeats ${task.recurrence}`}>↻ {task.recurrence}</span>}
           {related && <span>{related}</span>}
           {task.assignee && <span>· {task.assignee.name}</span>}
         </div>

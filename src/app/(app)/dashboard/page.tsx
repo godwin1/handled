@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { TaskRow } from "@/components/TaskRow";
 import { canEdit, canView } from "@/lib/permissions";
+import { monthlyEquivalent, formatMoney } from "@/lib/money";
 
 function startOfToday() {
   const d = new Date();
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
 
   const seeTasks = canView(user, "tasks");
   const seeDocuments = canView(user, "documents");
+  const seeAccounts = canView(user, "accounts");
   const tasksEditable = canEdit(user, "tasks");
 
   const include = {
@@ -33,7 +35,7 @@ export default async function DashboardPage() {
     account: { select: { name: true } },
   };
 
-  const [overdueTasks, thisWeekTasks, next30Tasks, pendingDocuments, documentCount, confirmedCount] =
+  const [overdueTasks, thisWeekTasks, next30Tasks, pendingDocuments, documentCount, confirmedCount, billableAccounts] =
     await Promise.all([
       seeTasks
         ? prisma.task.findMany({
@@ -65,8 +67,15 @@ export default async function DashboardPage() {
         : [],
       seeDocuments ? prisma.document.count({ where: { householdId: user.householdId } }) : 0,
       seeDocuments ? prisma.document.count({ where: { householdId: user.householdId, status: "CONFIRMED" } }) : 0,
+      seeAccounts
+        ? prisma.account.findMany({
+            where: { householdId: user.householdId, amount: { not: null } },
+            select: { amount: true, billingCycle: true },
+          })
+        : [],
     ]);
 
+  const monthlyBillsTotal = billableAccounts.reduce((sum, a) => sum + monthlyEquivalent(a), 0);
   const dueThisWeekCount = overdueTasks.length + thisWeekTasks.length;
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
@@ -157,6 +166,15 @@ export default async function DashboardPage() {
           <p className="text-sm text-stone-500">
             {confirmedCount} filed · {documentCount - confirmedCount} pending review
           </p>
+        </section>
+      )}
+
+      {seeAccounts && monthlyBillsTotal > 0 && (
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-stone-900">Monthly bills</h2>
+          <Link href="/accounts" className="text-sm text-stone-500 hover:text-accent-600">
+            {formatMoney(monthlyBillsTotal)}/month (est.)
+          </Link>
         </section>
       )}
     </div>

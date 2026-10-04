@@ -7,6 +7,20 @@ import { requireUser } from "@/lib/auth";
 import { requireEdit } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 
+const RECURRENCES = ["weekly", "monthly", "yearly"];
+
+function normalizeRecurrence(raw: string): string | null {
+  return RECURRENCES.includes(raw) ? raw : null;
+}
+
+function nextOccurrence(dueDate: Date, recurrence: string): Date {
+  const next = new Date(dueDate);
+  if (recurrence === "weekly") next.setDate(next.getDate() + 7);
+  else if (recurrence === "monthly") next.setMonth(next.getMonth() + 1);
+  else if (recurrence === "yearly") next.setFullYear(next.getFullYear() + 1);
+  return next;
+}
+
 export async function createTask(formData: FormData) {
   const user = await requireUser();
   requireEdit(user, "tasks");
@@ -17,6 +31,7 @@ export async function createTask(formData: FormData) {
   const personId = String(formData.get("personId") || "") || null;
   const assetId = String(formData.get("assetId") || "") || null;
   const accountId = String(formData.get("accountId") || "") || null;
+  const recurrence = normalizeRecurrence(String(formData.get("recurrence") || ""));
 
   if (!title || !dueDateRaw) return;
 
@@ -25,6 +40,7 @@ export async function createTask(formData: FormData) {
       title,
       type,
       dueDate: new Date(dueDateRaw),
+      recurrence,
       assigneeId,
       personId,
       assetId,
@@ -56,6 +72,7 @@ export async function updateTask(id: string, formData: FormData) {
   const personId = String(formData.get("personId") || "") || null;
   const assetId = String(formData.get("assetId") || "") || null;
   const accountId = String(formData.get("accountId") || "") || null;
+  const recurrence = normalizeRecurrence(String(formData.get("recurrence") || ""));
 
   if (!title || !dueDateRaw) return;
 
@@ -65,6 +82,7 @@ export async function updateTask(id: string, formData: FormData) {
       title,
       type,
       dueDate: new Date(dueDateRaw),
+      recurrence,
       assigneeId,
       personId,
       assetId,
@@ -112,6 +130,32 @@ export async function toggleTaskStatus(id: string) {
     entityLabel: task.title,
     detail: nowDone ? "marked done" : "marked not done",
   });
+
+  if (nowDone && task.recurrence) {
+    const next = await prisma.task.create({
+      data: {
+        title: task.title,
+        type: task.type,
+        recurrence: task.recurrence,
+        dueDate: nextOccurrence(task.dueDate, task.recurrence),
+        assigneeId: task.assigneeId,
+        personId: task.personId,
+        assetId: task.assetId,
+        accountId: task.accountId,
+        householdId: user.householdId,
+      },
+    });
+
+    await logAudit({
+      householdId: user.householdId,
+      userId: user.id,
+      userName: user.name,
+      action: "created",
+      category: "tasks",
+      entityLabel: next.title,
+      detail: `next ${task.recurrence} occurrence`,
+    });
+  }
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");

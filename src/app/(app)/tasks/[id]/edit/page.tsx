@@ -6,6 +6,12 @@ import { updateTask } from "@/lib/actions/tasks";
 import { canEdit } from "@/lib/permissions";
 
 const TASK_TYPES = ["pay", "renew", "cancel", "book", "submit", "call", "other"];
+const RECURRENCES = [
+  { value: "", label: "Never" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "yearly", label: "Yearly" },
+];
 
 function toInputDate(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -55,6 +61,16 @@ export default async function EditTaskPage({ params }: { params: Promise<{ id: s
               <label className="block text-xs font-medium text-stone-600 mb-1">Due date</label>
               <input type="date" name="dueDate" defaultValue={toInputDate(task.dueDate)} required className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-600 mb-1">Repeats</label>
+            <select name="recurrence" defaultValue={task.recurrence ?? ""} className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm">
+              {RECURRENCES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Assignee</label>

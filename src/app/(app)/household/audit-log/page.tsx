@@ -12,8 +12,11 @@ const ACTION_LABELS: Record<string, string> = {
   member_removed: "removed from the household",
   member_admin_changed: "admin status changed",
   member_permission_changed: "permissions changed",
+  member_2fa_reset: "had two-factor authentication reset",
   invite_created: "invite created",
   invite_revoked: "invite revoked",
+  document_share_created: "created a share link for",
+  document_share_revoked: "revoked a share link for",
 };
 
 export default async function AuditLogPage() {

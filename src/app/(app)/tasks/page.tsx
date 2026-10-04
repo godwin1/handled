@@ -6,6 +6,12 @@ import { createTask } from "@/lib/actions/tasks";
 import { canEdit, canView } from "@/lib/permissions";
 
 const TASK_TYPES = ["pay", "renew", "cancel", "book", "submit", "call", "other"];
+const RECURRENCES = [
+  { value: "", label: "Never" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "yearly", label: "Yearly" },
+];
 
 export default async function TasksPage() {
   const user = await requireUser();
@@ -75,6 +81,16 @@ export default async function TasksPage() {
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Due date</label>
             <input type="date" name="dueDate" required className="rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-600 mb-1">Repeats</label>
+            <select name="recurrence" className="rounded-md border border-stone-300 px-3 py-1.5 text-sm">
+              {RECURRENCES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Assignee</label>

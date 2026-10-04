@@ -57,6 +57,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
         <div className="flex items-center gap-2 text-xs text-stone-500">
           <Badge label={task.type} />
           <span>Due {task.dueDate.toLocaleDateString()}</span>
+          {task.recurrence && <span>· Repeats {task.recurrence}</span>}
           {task.assignee && <span>· Assigned to {task.assignee.name}</span>}
         </div>
 

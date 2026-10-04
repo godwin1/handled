@@ -4,8 +4,22 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAccount, deleteAccount } from "@/lib/actions/accounts";
 import { canEdit, canView } from "@/lib/permissions";
+import { monthlyEquivalent, formatMoney } from "@/lib/money";
 
 const TYPES = ["utility", "internet", "insurance", "bank", "school", "medical", "other"];
+const BILLING_CYCLES = [
+  { value: "monthly", label: "Monthly" },
+  { value: "weekly", label: "Weekly" },
+  { value: "yearly", label: "Yearly" },
+  { value: "one_time", label: "One-time" },
+];
+
+function billingLabel(account: { amount: number | null; currency: string | null; billingCycle: string | null }) {
+  if (!account.amount) return null;
+  const cycleLabel = BILLING_CYCLES.find((c) => c.value === account.billingCycle)?.label ?? "Monthly";
+  const suffix = account.billingCycle === "one_time" ? "" : ` / ${cycleLabel.toLowerCase()}`;
+  return `${formatMoney(account.amount, account.currency)}${suffix}`;
+}
 
 export default async function AccountsPage() {
   const user = await requireUser();
@@ -22,9 +36,20 @@ export default async function AccountsPage() {
     prisma.asset.findMany({ where: { householdId: user.householdId }, select: { id: true, name: true } }),
   ]);
 
+  const monthlyTotal = accounts.reduce((sum, a) => sum + monthlyEquivalent(a), 0);
+
   return (
     <div className="space-y-8">
       <h1 className="font-display text-2xl font-medium text-stone-900">Accounts</h1>
+
+      {monthlyTotal > 0 && (
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 flex items-center justify-between">
+          <h2 className="text-sm font-medium text-stone-900">Recurring bills</h2>
+          <p className="text-sm text-stone-500">
+            {formatMoney(monthlyTotal)}/month · {formatMoney(monthlyTotal * 12)}/year (est.)
+          </p>
+        </section>
+      )}
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         {accounts.length === 0 ? (
@@ -40,6 +65,7 @@ export default async function AccountsPage() {
                     {account.provider && ` · ${account.provider}`}
                     {account.person && ` · ${account.person.name}`}
                     {account.asset && ` · ${account.asset.name}`}
+                    {billingLabel(account) && ` · ${billingLabel(account)}`}
                   </p>
                 </div>
                 {editable && (
@@ -78,6 +104,24 @@ export default async function AccountsPage() {
               {TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-600 mb-1">Amount</label>
+            <input name="amount" type="number" step="0.01" placeholder="optional" className="w-24 rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-600 mb-1">Currency</label>
+            <input name="currency" placeholder="USD" className="w-20 rounded-md border border-stone-300 px-3 py-1.5 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-stone-600 mb-1">Billing cycle</label>
+            <select name="billingCycle" className="rounded-md border border-stone-300 px-3 py-1.5 text-sm">
+              {BILLING_CYCLES.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
                 </option>
               ))}
             </select>

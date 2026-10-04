@@ -2,7 +2,9 @@ import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteDocument } from "@/lib/actions/documents";
+import { revokeDocumentShareLink } from "@/lib/actions/documentShare";
 import { ConfirmDocumentForm } from "@/components/ConfirmDocumentForm";
+import { ShareDocumentForm } from "@/components/ShareDocumentForm";
 import { canEdit, canView } from "@/lib/permissions";
 
 export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,10 +18,16 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
   });
   if (!document) notFound();
 
-  const [people, assets, accounts] = await Promise.all([
+  const [people, assets, accounts, shareLinks] = await Promise.all([
     prisma.person.findMany({ where: { householdId: user.householdId }, select: { id: true, name: true } }),
     prisma.asset.findMany({ where: { householdId: user.householdId }, select: { id: true, name: true } }),
     prisma.account.findMany({ where: { householdId: user.householdId }, select: { id: true, name: true } }),
+    editable
+      ? prisma.documentShareLink.findMany({
+          where: { documentId: id, revokedAt: null, expiresAt: { gt: new Date() } },
+          orderBy: { createdAt: "desc" },
+        })
+      : [],
   ]);
 
   const isImage = document.mimeType.startsWith("image/");
@@ -61,6 +69,33 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
         <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 text-sm text-stone-500">
           You have view-only access to documents.
         </div>
+      )}
+
+      {editable && (
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-4">
+          <div>
+            <h2 className="text-sm font-medium text-stone-900">Share outside your household</h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Anyone with the link can view this document without an account — for an accountant, landlord, etc.
+            </p>
+          </div>
+          <ShareDocumentForm documentId={document.id} />
+          {shareLinks.length > 0 && (
+            <div className="border-t border-stone-100 pt-3 space-y-2">
+              <p className="text-xs font-medium text-stone-600">Active links</p>
+              {shareLinks.map((link) => (
+                <div key={link.id} className="flex items-center justify-between text-xs text-stone-500">
+                  <span>Expires {link.expiresAt!.toLocaleDateString()}</span>
+                  <form action={revokeDocumentShareLink.bind(null, document.id, link.id)}>
+                    <button type="submit" className="text-stone-400 hover:text-red-600">
+                      Revoke
+                    </button>
+                  </form>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       )}
     </div>
   );
