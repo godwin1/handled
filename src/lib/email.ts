@@ -142,6 +142,43 @@ export async function sendInviteEmail(params: {
   });
 }
 
+export async function sendLoginAlertEmail(params: {
+  to: string;
+  recipientName: string;
+  ipAddress: string;
+  userAgent: string;
+  when: Date;
+}) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">New sign-in to your account</h2>
+      <p style="font-size:14px;color:#78716c;">
+        Hi ${escapeHtml(params.recipientName)}, your Handled account was just signed into from a new location.
+      </p>
+      <table style="font-size:13px;color:#44403c;margin-top:12px;">
+        <tr><td style="padding-right:12px;color:#a8a29e;">When</td><td>${escapeHtml(params.when.toUTCString())}</td></tr>
+        <tr><td style="padding-right:12px;color:#a8a29e;">IP address</td><td>${escapeHtml(params.ipAddress)}</td></tr>
+        <tr><td style="padding-right:12px;color:#a8a29e;">Device</td><td>${escapeHtml(params.userAgent)}</td></tr>
+      </table>
+      <p style="color:#78716c;font-size:13px;margin-top:20px;">
+        If this was you, no action is needed. If it wasn't, reset your password immediately and review your active
+        sessions from Account settings.
+      </p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: "New sign-in to your Handled account",
+    html,
+  });
+}
+
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }

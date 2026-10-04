@@ -2,8 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { createSession, destroySession, hashPassword, verifyPassword } from "@/lib/auth";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { headers } from "next/headers";
+import { createSession, destroySession, hashPassword, verifyPassword, createPendingTwoFactor } from "@/lib/auth";
+import { sendPasswordResetEmail, sendLoginAlertEmail } from "@/lib/email";
 import { currentOrigin } from "@/lib/url";
 import { getClientIp, isRateLimited, recordAttempt } from "@/lib/rateLimit";
 
@@ -70,8 +71,35 @@ export async function logIn(_prevState: { error?: string } | undefined, formData
     return { error: "Invalid email or password." };
   }
 
+  if (user.totpEnabled) {
+    await createPendingTwoFactor(user.id);
+    redirect("/login/verify");
+  }
+
+  await alertOnNewIp(user.id, user.email, user.name, ip);
   await createSession(user.id);
   redirect("/dashboard");
+}
+
+// Fire-and-forget: only emails when this IP has no prior session for the
+// user, so logging in repeatedly from home doesn't generate repeat alerts.
+// Never blocks or fails the login itself.
+async function alertOnNewIp(userId: string, email: string, name: string, ip: string) {
+  try {
+    const priorFromThisIp = await prisma.session.findFirst({ where: { userId, ipAddress: ip } });
+    if (priorFromThisIp) return;
+
+    const h = await headers();
+    await sendLoginAlertEmail({
+      to: email,
+      recipientName: name,
+      ipAddress: ip,
+      userAgent: h.get("user-agent") ?? "unknown device",
+      when: new Date(),
+    });
+  } catch (err) {
+    console.error("Failed to send login alert email:", err);
+  }
 }
 
 export async function logOut() {

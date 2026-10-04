@@ -47,6 +47,12 @@ model User {
   // of any MemberPermission rows.
   isAdmin Boolean @default(false)
 
+  // AES-256-GCM encrypted (key derived from AUTH_SECRET) - never stored
+  // plaintext. totpEnabled only flips true after enrollment is confirmed
+  // with a valid code, so a half-finished enrollment can't lock anyone out.
+  totpSecret  String?
+  totpEnabled Boolean @default(false)
+
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
@@ -57,6 +63,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   permissions         MemberPermission[]
   auditLogs           AuditLog[]
+  backupCodes         BackupCode[]
+  pendingTwoFactors   PendingTwoFactor[]
 }
 
 // category: people | assets | accounts | documents | tasks
@@ -126,6 +134,38 @@ model Session {
   id        String   @id @default(cuid())
   expiresAt DateTime
   createdAt DateTime @default(now())
+
+  // Captured once at creation (not updated per-request, to avoid a write on
+  // every page load) - shown in the account page's session list so a user
+  // can recognize/revoke a device.
+  userAgent String?
+  ipAddress String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// A short-lived record bridging "password verified" and "session created"
+// when 2FA is enabled - never a real session on its own. Tracked via its
+// own cookie (handled_pending_2fa), separate from the real session cookie,
+// and deleted once the TOTP/backup code is verified or it expires.
+model PendingTwoFactor {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Single-use recovery codes issued at 2FA enrollment, hashed like
+// passwords (bcrypt) since they're bearer secrets. usedAt null = still
+// valid.
+model BackupCode {
+  id        String    @id @default(cuid())
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

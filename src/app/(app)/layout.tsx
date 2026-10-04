@@ -47,7 +47,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm text-stone-500">
-            <span className="hidden sm:inline text-stone-400">{user.household.name}</span>
+            <span className="hidden lg:inline text-stone-400 whitespace-nowrap max-w-[12rem] truncate">
+              {user.household.name}
+            </span>
+            <Link href="/account" className="hover:text-accent-600 transition-colors">
+              Account
+            </Link>
             <form action={logOut}>
               <button type="submit" className="hover:text-accent-600 transition-colors">
                 Log out
