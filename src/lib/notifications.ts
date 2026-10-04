@@ -4,6 +4,7 @@ import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { registerPushToken } from "@/lib/actions/push";
+import { FcmToken } from "@/lib/nativePlugins";
 
 export type ReminderTask = {
   id: string;
@@ -142,9 +143,21 @@ export async function syncPushRegistration() {
   if (!pushListenersAttached) {
     pushListenersAttached = true;
 
-    PushNotifications.addListener("registration", (token) => {
-      const platform = Capacitor.getPlatform() === "ios" ? "ios" : "android";
-      registerPushToken(token.value, platform).catch(() => {});
+    PushNotifications.addListener("registration", async (token) => {
+      // Android's token here is already a real FCM token. iOS's is the raw
+      // APNs token - swap it for the real FCM one via FcmTokenPlugin, which
+      // by now can resolve it since AppDelegate set apnsToken before this
+      // event fired.
+      if (Capacitor.getPlatform() === "ios") {
+        try {
+          const { token: fcmToken } = await FcmToken.getToken();
+          await registerPushToken(fcmToken, "ios");
+        } catch (err) {
+          console.error("Failed to resolve FCM token on iOS:", err);
+        }
+      } else {
+        await registerPushToken(token.value, "android").catch(() => {});
+      }
     });
 
     PushNotifications.addListener("registrationError", (err) => {

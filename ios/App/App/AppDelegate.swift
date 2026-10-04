@@ -1,13 +1,17 @@
 import UIKit
 import Capacitor
+import FirebaseCore
+import FirebaseMessaging
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, MessagingDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        FirebaseApp.configure()
+        Messaging.messaging().delegate = self
         return true
     }
 
@@ -36,14 +40,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Forwards the APNs device token (or registration failure) to
     // @capacitor/push-notifications, which listens for these exact
     // notification names and turns them into the plugin's JS 'registration'
-    // / 'registrationError' events.
+    // / 'registrationError' events. That JS event carries the raw APNs
+    // token though, not an FCM one - our server sends via FCM, so the app
+    // actually registers using FcmTokenPlugin.getToken() instead (see
+    // FcmTokenPlugin.swift). Setting apnsToken here is still required: it's
+    // what lets Messaging produce a real FCM token at all.
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
         NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)
     }
 
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
+
+    // Required by MessagingDelegate - we don't need to act on token refresh
+    // here since FcmTokenPlugin.getToken() is pull-based (called fresh each
+    // time the web app registers), but the delegate must be set for FCM's
+    // APNs-token-to-FCM-token exchange to work at all.
+    func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {}
 
     func application(_ application: UIApplication,
                      configurationForConnecting connectingSceneSession: UISceneSession,
