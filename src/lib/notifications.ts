@@ -164,6 +164,24 @@ export async function syncPushRegistration() {
       console.error("Push registration failed:", err);
     });
 
+    // Neither platform auto-displays a system notification for a push that
+    // arrives while the app is in the foreground - it's just handed to the
+    // app silently. Show it ourselves via local notifications so a
+    // foregrounded digest/assignment/test push is actually visible instead
+    // of disappearing unnoticed.
+    PushNotifications.addListener("pushNotificationReceived", (notification) => {
+      LocalNotifications.schedule({
+        notifications: [
+          {
+            id: Math.floor(Math.random() * 2147483647),
+            title: notification.title ?? "Handled",
+            body: notification.body ?? "",
+            schedule: { at: new Date(Date.now() + 200) },
+          },
+        ],
+      }).catch(() => {});
+    });
+
     PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
       const url = action.notification.data?.url as string | undefined;
       if (url) window.location.href = url;
