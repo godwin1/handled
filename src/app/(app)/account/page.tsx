@@ -5,15 +5,19 @@ import { startEnrollment } from "@/lib/actions/twoFactor";
 import { friendlyUserAgent } from "@/lib/userAgent";
 import { DisableTwoFactorForm } from "@/components/DisableTwoFactorForm";
 import { RegenerateBackupCodesButton } from "@/components/RegenerateBackupCodesButton";
+import { SendTestPushButton } from "@/components/SendTestPushButton";
 
 export default async function AccountPage() {
   const user = await requireUser();
   const currentSessionId = await getCurrentSessionId();
 
-  const sessions = await prisma.session.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
+  const [sessions, pushTokenCount] = await Promise.all([
+    prisma.session.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.pushToken.count({ where: { userId: user.id } }),
+  ]);
 
   return (
     <div className="space-y-8 max-w-2xl">
@@ -49,6 +53,16 @@ export default async function AccountPage() {
             </button>
           </form>
         )}
+      </section>
+
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-2">
+        <h2 className="text-sm font-medium text-stone-900">Push notifications</h2>
+        <p className="text-xs text-stone-500">
+          {pushTokenCount === 0
+            ? "No devices registered yet — open the mobile app and allow notifications when prompted."
+            : `${pushTokenCount} device${pushTokenCount === 1 ? "" : "s"} registered.`}
+        </p>
+        <SendTestPushButton />
       </section>
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">

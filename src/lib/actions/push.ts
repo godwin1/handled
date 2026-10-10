@@ -2,6 +2,15 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { sendPushToUser } from "@/lib/push";
+
+export async function sendTestPush(): Promise<{ sent: number; skipped: boolean }> {
+  const user = await requireUser();
+  return sendPushToUser(user.id, {
+    title: "Test notification",
+    body: "If you can see this, push notifications are working.",
+  });
+}
 
 export async function registerPushToken(token: string, platform: string) {
   const user = await requireUser();
