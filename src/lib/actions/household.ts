@@ -9,6 +9,7 @@ import { requireAdmin, type Category } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import { sendInviteEmail } from "@/lib/email";
 import { currentOrigin } from "@/lib/url";
+import { canAddMember, getLimits } from "@/lib/billing";
 
 const INVITE_DAYS = 7;
 
@@ -17,6 +18,11 @@ export async function createInvite(
   formData: FormData
 ): Promise<{ token: string; emailSent?: boolean } | { error: string }> {
   const user = await requireUser();
+
+  if (!(await canAddMember(user.householdId, user.household))) {
+    return { error: `Your plan allows up to ${getLimits(user.household).members} household members. Upgrade to invite more.` };
+  }
+
   const email = String(formData.get("email") || "").trim().toLowerCase() || null;
 
   if (email) {
@@ -98,9 +104,13 @@ export async function acceptInvite(
     return { error: "Please fill in all fields. Password must be at least 8 characters." };
   }
 
-  const invite = await prisma.invite.findUnique({ where: { token } });
+  const invite = await prisma.invite.findUnique({ where: { token }, include: { household: true } });
   if (!invite || invite.acceptedAt || invite.expiresAt < new Date()) {
     return { error: "This invite link is no longer valid." };
+  }
+
+  if (!(await canAddMember(invite.householdId, invite.household))) {
+    return { error: "This household has reached its plan's member limit. Ask an admin to upgrade before you join." };
   }
 
   const email = invite.email ?? String(formData.get("email") || "").trim().toLowerCase();

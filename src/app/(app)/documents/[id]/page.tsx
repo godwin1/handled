@@ -6,6 +6,8 @@ import { revokeDocumentShareLink } from "@/lib/actions/documentShare";
 import { ConfirmDocumentForm } from "@/components/ConfirmDocumentForm";
 import { ShareDocumentForm } from "@/components/ShareDocumentForm";
 import { canEdit, canView } from "@/lib/permissions";
+import { getLimits } from "@/lib/billing";
+import Link from "next/link";
 
 export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -79,7 +81,16 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
               Anyone with the link can view this document without an account — for an accountant, landlord, etc.
             </p>
           </div>
-          <ShareDocumentForm documentId={document.id} />
+          {getLimits(user.household).sharing ? (
+            <ShareDocumentForm documentId={document.id} />
+          ) : (
+            <p className="text-xs text-stone-500">
+              This needs a Plus or Family plan.{" "}
+              <Link href="/billing" className="text-accent-600 underline hover:text-accent-700">
+                Upgrade
+              </Link>
+            </p>
+          )}
           {shareLinks.length > 0 && (
             <div className="border-t border-stone-100 pt-3 space-y-2">
               <p className="text-xs font-medium text-stone-600">Active links</p>

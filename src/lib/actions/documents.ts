@@ -9,12 +9,18 @@ import { requireUser } from "@/lib/auth";
 import { extractDocument } from "@/lib/extraction";
 import { canEdit, requireEdit } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
+import { canAddDocument, getLimits, hasAiExtractionQuota } from "@/lib/billing";
 
 export async function uploadDocument(_prevState: { error?: string } | undefined, formData: FormData) {
   const user = await requireUser();
   if (!canEdit(user, "documents")) {
     return { error: "You don't have permission to upload documents." };
   }
+
+  if (!(await canAddDocument(user.householdId, user.household))) {
+    return { error: `Your plan allows up to ${getLimits(user.household).documents} documents. Upgrade to add more.` };
+  }
+
   const file = formData.get("file") as File | null;
   const personId = String(formData.get("personId") || "") || null;
   const assetId = String(formData.get("assetId") || "") || null;
@@ -36,7 +42,10 @@ export async function uploadDocument(_prevState: { error?: string } | undefined,
     contentType: mimeType,
   });
 
-  const extraction = await extractDocument(file.name, buffer, mimeType);
+  // Over quota degrades to the filename-guess fallback rather than
+  // blocking the upload outright - same path as no API key configured.
+  const skipAi = !(await hasAiExtractionQuota(user.householdId, user.household));
+  const extraction = await extractDocument(file.name, buffer, mimeType, skipAi);
 
   const document = await prisma.document.create({
     data: {

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
+import { getLimits } from "@/lib/billing";
 
 const ACTION_LABELS: Record<string, string> = {
   created: "created",
@@ -22,6 +23,24 @@ const ACTION_LABELS: Record<string, string> = {
 export default async function AuditLogPage() {
   const user = await requireUser();
   if (!user.isAdmin) redirect("/household");
+
+  if (!getLimits(user.household).auditLog) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Link href="/household" className="text-sm text-stone-500 hover:text-stone-900">
+            ← Back to household
+          </Link>
+        </div>
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 text-sm text-stone-600">
+          The activity log needs a Family plan.{" "}
+          <Link href="/billing" className="text-accent-600 underline hover:text-accent-700">
+            Upgrade
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const entries = await prisma.auditLog.findMany({
     where: { householdId: user.householdId },

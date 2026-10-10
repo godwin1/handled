@@ -53,9 +53,13 @@ function getClient() {
 export async function extractDocument(
   filename: string,
   fileBuffer: Buffer,
-  mimeType: string
+  mimeType: string,
+  skipAi = false
 ): Promise<ExtractionResult> {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // skipAi: the household has used up its plan's monthly AI extraction
+  // quota - same degrade path as no API key configured at all, rather than
+  // blocking the upload outright.
+  if (!process.env.ANTHROPIC_API_KEY || skipAi) {
     return filenameHeuristic(filename);
   }
 

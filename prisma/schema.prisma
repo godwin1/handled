@@ -19,10 +19,26 @@ model RateLimitAttempt {
   @@index([key, createdAt])
 }
 
+// plan: free | plus | family - the subscription tier, independent of
+// legacyFree below. subscriptionStatus mirrors Stripe's subscription.status
+// (active, past_due, canceled, ...) - null means no subscription has ever
+// existed (plain free tier, not a lapsed paid one).
 model Household {
   id        String   @id @default(cuid())
   name      String
   createdAt DateTime @default(now())
+
+  plan   String  @default("free")
+  // Households that existed before billing launched keep full (effectively
+  // Family-tier) access forever, regardless of `plan` - set once, in the
+  // migration that added this column, for every household that existed at
+  // that point. Never set for households created after.
+  legacyFree Boolean @default(false)
+
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  subscriptionStatus   String?
+  currentPeriodEnd     DateTime?
 
   members   User[]
   people    Person[]

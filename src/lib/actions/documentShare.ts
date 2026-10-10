@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth";
 import { requireEdit } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import { currentOrigin } from "@/lib/url";
+import { getLimits } from "@/lib/billing";
 
 const EXPIRY_DAYS: Record<string, number> = { "1": 1, "7": 7, "30": 30 };
 
@@ -17,6 +18,10 @@ export async function createDocumentShareLink(
 ): Promise<{ link?: string; error?: string }> {
   const user = await requireUser();
   requireEdit(user, "documents");
+
+  if (!getLimits(user.household).sharing) {
+    return { error: "Sharing documents outside your household needs a Plus or Family plan." };
+  }
 
   const document = await prisma.document.findFirst({ where: { id: documentId, householdId: user.householdId } });
   if (!document) return { error: "Document not found." };

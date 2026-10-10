@@ -15,6 +15,7 @@ const NAV: { href: string; label: string; category?: Category }[] = [
   { href: "/accounts", label: "Accounts", category: "accounts" },
   { href: "/search", label: "Search" },
   { href: "/household", label: "Household" },
+  { href: "/billing", label: "Billing" },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
