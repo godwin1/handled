@@ -40,7 +40,18 @@ model Household {
   subscriptionStatus   String?
   currentPeriodEnd     DateTime?
 
+  // Generated lazily on first request for the calendar feed, not at
+  // creation - most households will never use it.
+  calendarToken String? @unique
+
+  // Emergency/legacy access: an admin-generated link handed personally to
+  // someone outside the household (a spouse who doesn't use the app, an
+  // executor). minAccessWaitDays guards against a compromised link
+  // granting access too fast - enforced as a floor in the action that sets it.
+  legacyAccessMinWaitDays Int @default(14)
+
   members   User[]
+  legacyAccessLinks LegacyAccessLink[]
   people    Person[]
   assets    Asset[]
   accounts  Account[]
@@ -84,6 +95,8 @@ model User {
   twoFactorRecoveryTokens TwoFactorRecoveryToken[]
   documentShareLinks  DocumentShareLink[]
   pushTokens          PushToken[]
+  legacyAccessLinksCreated LegacyAccessLink[]
+  aiChatQueries       AiChatQuery[]
 }
 
 // platform: android | ios. A user can have several (multiple devices);
@@ -284,7 +297,9 @@ model Account {
 }
 
 // type: bill | id | contract | warranty | receipt | medical | other
-// status: PENDING_REVIEW | CONFIRMED
+// status: PENDING_REVIEW | CONFIRMED | SUPERSEDED (replaced by a newer
+// version - see supersedesId - kept around for history, hidden from the
+// main list)
 model Document {
   id     String @id @default(cuid())
   title  String
@@ -301,6 +316,17 @@ model Document {
   expiryDate   DateTime?
   policyNumber String?
   notes        String?
+
+  // Free-text transcription of the document's contents, captured at
+  // upload for full-text search - separate from the structured fields
+  // above, which stay the source of truth for amount/dueDate/etc.
+  extractedText String? @db.Text
+
+  // The document this one replaces, if uploaded as a new version of an
+  // existing one, rather than a brand new document.
+  supersedesId String?   @unique
+  supersedes   Document? @relation("DocumentVersions", fields: [supersedesId], references: [id], onDelete: SetNull)
+  supersededBy Document? @relation("DocumentVersions")
 
   // Extraction's proposed follow-up task (set at upload, consumed by the
   // confirm screen's defaults) - type: pay | renew | cancel | book | submit | call | other
@@ -394,4 +420,58 @@ model Comment {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// An admin generates this once and hands the link to someone personally
+// (a spouse who doesn't use the app, an executor) - visiting it is how
+// they trigger a request later, if the day ever comes. Revoking just
+// deletes the row; nothing else references it by anything but its token.
+model LegacyAccessLink {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  contactName String
+  contactEmail String
+  createdAt   DateTime @default(now())
+
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  createdByUserId String
+  createdBy       User   @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  requests LegacyAccessRequest[]
+}
+
+// status: pending | cancelled | granted. Created the moment the contact
+// clicks "Request access" on their link; grantAt is requestedAt plus the
+// household's configured wait - checked by the daily cron, same job that
+// sends reminder digests. cancelToken is emailed to every admin so any one
+// of them can stop it without needing to log in (the whole point is this
+// still works if the usual admin is the one who's unreachable).
+model LegacyAccessRequest {
+  id          String    @id @default(cuid())
+  status      String    @default("pending")
+  requestedAt DateTime  @default(now())
+  grantAt     DateTime
+  cancelToken String    @unique
+  grantedAt   DateTime?
+
+  linkId String
+  link   LegacyAccessLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+}
+
+// A lightweight per-query log for the AI chat feature - counts toward the
+// plan's monthly query quota (same pattern as Document rows counting
+// toward the AI extraction quota) and gives basic usage/abuse visibility.
+model AiChatQuery {
+  id        String   @id @default(cuid())
+  question  String
+  createdAt DateTime @default(now())
+
+  householdId String
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([householdId, createdAt])
 }

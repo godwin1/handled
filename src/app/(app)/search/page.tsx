@@ -20,7 +20,9 @@ export default async function SearchPage({
       canView(user, "people") ? prisma.person.findMany({ where: { householdId: user.householdId } }) : [],
       canView(user, "assets") ? prisma.asset.findMany({ where: { householdId: user.householdId } }) : [],
       canView(user, "accounts") ? prisma.account.findMany({ where: { householdId: user.householdId } }) : [],
-      canView(user, "documents") ? prisma.document.findMany({ where: { householdId: user.householdId } }) : [],
+      canView(user, "documents")
+        ? prisma.document.findMany({ where: { householdId: user.householdId, status: { not: "SUPERSEDED" } } })
+        : [],
       canView(user, "tasks") ? prisma.task.findMany({ where: { householdId: user.householdId } }) : [],
     ]);
 
@@ -38,7 +40,7 @@ export default async function SearchPage({
         .filter((a) => matches(a.name, a.provider, a.type))
         .map((a) => ({ kind: "Account", href: "/accounts", title: a.name, subtitle: a.provider ?? a.type })),
       ...documents
-        .filter((d) => matches(d.title, d.merchant, d.type, d.policyNumber))
+        .filter((d) => matches(d.title, d.merchant, d.type, d.policyNumber, d.extractedText))
         .map((d) => ({ kind: "Document", href: `/documents/${d.id}`, title: d.title, subtitle: d.type })),
       ...tasks
         .filter((t) => matches(t.title, t.type))

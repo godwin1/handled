@@ -5,13 +5,18 @@ import { InviteForm } from "@/components/InviteForm";
 import { PermissionSelect } from "@/components/PermissionSelect";
 import { RemoveMemberButton } from "@/components/RemoveMemberButton";
 import { ResetTwoFactorButton } from "@/components/ResetTwoFactorButton";
+import { CalendarSyncSection } from "@/components/CalendarSyncSection";
+import { CreateLegacyAccessLinkForm } from "@/components/CreateLegacyAccessLinkForm";
+import { RevokeLegacyAccessLinkButton } from "@/components/RevokeLegacyAccessLinkButton";
 import { revokeInvite, setMemberAdmin } from "@/lib/actions/household";
+import { getOrCreateCalendarUrl } from "@/lib/actions/calendar";
+import { setLegacyAccessWaitDays } from "@/lib/actions/legacyAccess";
 import { CATEGORIES, getLevel } from "@/lib/permissions";
 
 export default async function HouseholdPage() {
   const user = await requireUser();
 
-  const [members, pendingInvites, adminCount] = await Promise.all([
+  const [members, pendingInvites, adminCount, calendarUrl, legacyAccessLinks] = await Promise.all([
     prisma.user.findMany({
       where: { householdId: user.householdId },
       select: { id: true, name: true, email: true, createdAt: true, isAdmin: true, permissions: true, totpEnabled: true },
@@ -22,6 +27,14 @@ export default async function HouseholdPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.user.count({ where: { householdId: user.householdId, isAdmin: true } }),
+    getOrCreateCalendarUrl(),
+    user.isAdmin
+      ? prisma.legacyAccessLink.findMany({
+          where: { householdId: user.householdId },
+          include: { requests: { orderBy: { requestedAt: "desc" }, take: 1 } },
+          orderBy: { createdAt: "desc" },
+        })
+      : [],
   ]);
 
   return (
@@ -128,6 +141,65 @@ export default async function HouseholdPage() {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      <CalendarSyncSection initialUrl={calendarUrl} />
+
+      {user.isAdmin && (
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-4">
+          <div>
+            <h2 className="text-sm font-medium text-stone-900">Emergency access</h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Give someone outside your household (a spouse, an executor) a link they can use to request access if
+              you're ever unreachable. A request waits before taking effect, and every admin gets an email with a
+              one-click way to cancel it.
+            </p>
+          </div>
+
+          <form action={setLegacyAccessWaitDays} className="flex items-center gap-2 text-sm">
+            <label className="text-stone-600">Wait</label>
+            <input
+              type="number"
+              name="waitDays"
+              min={3}
+              max={90}
+              defaultValue={user.household.legacyAccessMinWaitDays}
+              className="w-16 rounded-md border border-stone-300 px-2 py-1 text-sm"
+            />
+            <span className="text-stone-600">days before granting</span>
+            <button type="submit" className="text-xs text-accent-600 hover:text-accent-700 font-medium">
+              Save
+            </button>
+          </form>
+
+          {legacyAccessLinks.length > 0 && (
+            <div className="divide-y divide-stone-100 border-t border-stone-100 pt-2">
+              {legacyAccessLinks.map((link) => {
+                const latest = link.requests[0];
+                return (
+                  <div key={link.id} className="flex items-center justify-between py-2">
+                    <div>
+                      <p className="text-sm text-stone-900">
+                        {link.contactName} <span className="text-stone-400">· {link.contactEmail}</span>
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {!latest && "No request yet"}
+                        {latest?.status === "pending" && `Requested — grants ${latest.grantAt.toLocaleDateString()} unless cancelled`}
+                        {latest?.status === "granted" && `Granted ${latest.grantedAt?.toLocaleDateString()}`}
+                        {latest?.status === "cancelled" && "Last request was cancelled"}
+                      </p>
+                    </div>
+                    {latest?.status !== "granted" && (
+                      <RevokeLegacyAccessLinkButton linkId={link.id} name={link.contactName} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <CreateLegacyAccessLinkForm />
         </section>
       )}
     </div>

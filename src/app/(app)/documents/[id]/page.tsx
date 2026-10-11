@@ -5,6 +5,7 @@ import { deleteDocument } from "@/lib/actions/documents";
 import { revokeDocumentShareLink } from "@/lib/actions/documentShare";
 import { ConfirmDocumentForm } from "@/components/ConfirmDocumentForm";
 import { ShareDocumentForm } from "@/components/ShareDocumentForm";
+import { UploadNewVersionForm } from "@/components/UploadNewVersionForm";
 import { canEdit, canView } from "@/lib/permissions";
 import { getLimits } from "@/lib/billing";
 import Link from "next/link";
@@ -17,6 +18,10 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
 
   const document = await prisma.document.findFirst({
     where: { id, householdId: user.householdId },
+    include: {
+      supersedes: { select: { id: true, title: true, createdAt: true } },
+      supersededBy: { select: { id: true, title: true, createdAt: true } },
+    },
   });
   if (!document) notFound();
 
@@ -49,6 +54,16 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
           </form>
         )}
       </div>
+
+      {document.supersededBy && (
+        <div className="bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-sm text-amber-800">
+          A newer version exists.{" "}
+          <Link href={`/documents/${document.supersededBy.id}`} className="underline hover:text-amber-950">
+            View it
+          </Link>
+          .
+        </div>
+      )}
 
       {isImage ? (
         <div className="relative w-full max-h-80 overflow-hidden rounded-2xl border border-stone-200/70 shadow-sm bg-stone-100">
@@ -106,6 +121,27 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {editable && !document.supersededBy && (
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-3">
+          <div>
+            <h2 className="text-sm font-medium text-stone-900">Version history</h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Got a renewed or corrected copy? Replace it here — the old one stays on record below.
+            </p>
+          </div>
+          {document.supersedes && (
+            <p className="text-xs text-stone-500">
+              Replaces{" "}
+              <Link href={`/documents/${document.supersedes.id}`} className="underline hover:text-stone-900">
+                an earlier version
+              </Link>{" "}
+              from {document.supersedes.createdAt.toLocaleDateString()}.
+            </p>
+          )}
+          <UploadNewVersionForm documentId={document.id} />
         </section>
       )}
     </div>

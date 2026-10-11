@@ -14,6 +14,7 @@ export interface ExtractionResult {
   dueDate?: Date;
   expiryDate?: Date;
   policyNumber?: string;
+  extractedText?: string;
   suggestedTaskTitle: string;
   suggestedTaskType: TaskType;
   suggestedTaskDueDate: Date;
@@ -31,6 +32,10 @@ const ExtractionSchema = z.object({
   dueDate: z.string().nullable().describe("ISO 8601 date (YYYY-MM-DD) a payment is due, if any"),
   expiryDate: z.string().nullable().describe("ISO 8601 date (YYYY-MM-DD) the document/policy/ID expires, if any"),
   policyNumber: z.string().nullable().describe("Policy, account, or reference number, if any"),
+  extractedText: z
+    .string()
+    .nullable()
+    .describe("A plain-text transcription of the document's readable content, for search - names, addresses, line items, terms, anything legible. Not just a summary."),
   suggestedTaskTitle: z.string().describe("A short, concrete follow-up task for the household, e.g. 'Renew car insurance'"),
   suggestedTaskType: z.enum(TASK_TYPES),
   suggestedTaskDueDate: z.string().describe("ISO 8601 date (YYYY-MM-DD) the follow-up task should be done by"),
@@ -102,6 +107,7 @@ export async function extractDocument(
       dueDate: parsed.dueDate ? new Date(parsed.dueDate) : undefined,
       expiryDate: parsed.expiryDate ? new Date(parsed.expiryDate) : undefined,
       policyNumber: parsed.policyNumber ?? undefined,
+      extractedText: parsed.extractedText ?? undefined,
       suggestedTaskTitle: parsed.suggestedTaskTitle,
       suggestedTaskType: parsed.suggestedTaskType,
       suggestedTaskDueDate: new Date(parsed.suggestedTaskDueDate),

@@ -13,19 +13,19 @@ function getStripe() {
   return new Stripe(key);
 }
 
-const PRICE_IDS: Record<"plus" | "family", string | undefined> = {
-  plus: process.env.STRIPE_PRICE_PLUS,
-  family: process.env.STRIPE_PRICE_FAMILY,
+const PRICE_IDS: Record<"plus" | "family", Record<"month" | "year", string | undefined>> = {
+  plus: { month: process.env.STRIPE_PRICE_PLUS, year: process.env.STRIPE_PRICE_PLUS_ANNUAL },
+  family: { month: process.env.STRIPE_PRICE_FAMILY, year: process.env.STRIPE_PRICE_FAMILY_ANNUAL },
 };
 
 // Only admins manage the household's subscription - same reasoning as
 // everything else in household.ts that affects the whole group.
-export async function createCheckoutSession(plan: "plus" | "family") {
+export async function createCheckoutSession(plan: "plus" | "family", interval: "month" | "year" = "month") {
   const user = await requireUser();
   requireAdmin(user);
 
-  const priceId = PRICE_IDS[plan];
-  if (!priceId) throw new Error(`No Stripe price configured for plan "${plan}"`);
+  const priceId = PRICE_IDS[plan][interval];
+  if (!priceId) throw new Error(`No Stripe price configured for plan "${plan}" (${interval})`);
 
   const stripe = getStripe();
   const origin = await currentOrigin();

@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PLAN_LABELS, PLAN_PRICES, PLAN_LIMITS, getEffectivePlan } from "@/lib/billing";
+import { PLAN_LABELS, PLAN_PRICES, PLAN_PRICES_ANNUAL, PLAN_LIMITS, getEffectivePlan } from "@/lib/billing";
 import { UpgradeButton } from "@/components/UpgradeButton";
 import { ManageBillingButton } from "@/components/ManageBillingButton";
 
@@ -51,7 +51,7 @@ export default async function BillingPage({
           {!user.household.legacyFree && effectivePlan !== "free" && user.isAdmin && <ManageBillingButton />}
         </div>
 
-        <div className="grid grid-cols-3 gap-4 text-sm border-t border-stone-100 pt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm border-t border-stone-100 pt-4">
           <div>
             <p className="text-stone-500 text-xs">Members</p>
             <p className="text-stone-900">
@@ -68,6 +68,10 @@ export default async function BillingPage({
             <p className="text-stone-500 text-xs">AI extractions / month</p>
             <p className="text-stone-900">{formatLimit(limits.aiExtractions)}</p>
           </div>
+          <div>
+            <p className="text-stone-500 text-xs">AI chat / month</p>
+            <p className="text-stone-900">{formatLimit(limits.aiChatQueries)}</p>
+          </div>
         </div>
       </section>
 
@@ -77,19 +81,17 @@ export default async function BillingPage({
             .filter((plan) => plan !== effectivePlan)
             .map((plan) => (
               <div key={plan} className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-3">
-                <div>
-                  <h3 className="text-sm font-medium text-stone-900">{PLAN_LABELS[plan]}</h3>
-                  <p className="text-lg font-display text-stone-900">${PLAN_PRICES[plan]}/mo</p>
-                </div>
+                <h3 className="text-sm font-medium text-stone-900">{PLAN_LABELS[plan]}</h3>
                 <ul className="text-xs text-stone-500 space-y-1">
                   <li>{formatLimit(PLAN_LIMITS[plan].members)} members</li>
                   <li>{formatLimit(PLAN_LIMITS[plan].documents)} documents</li>
                   <li>{formatLimit(PLAN_LIMITS[plan].aiExtractions)} AI extractions/month</li>
+                  <li>{formatLimit(PLAN_LIMITS[plan].aiChatQueries)} AI chat questions/month</li>
                   {PLAN_LIMITS[plan].sharing && <li>Document sharing outside household</li>}
                   {PLAN_LIMITS[plan].auditLog && <li>Activity log</li>}
                 </ul>
                 {user.isAdmin ? (
-                  <UpgradeButton plan={plan} />
+                  <UpgradeButton plan={plan} monthlyPrice={PLAN_PRICES[plan]} annualPrice={PLAN_PRICES_ANNUAL[plan]} />
                 ) : (
                   <p className="text-xs text-stone-400">Ask your household admin to upgrade.</p>
                 )}

@@ -11,6 +11,55 @@ import { canEdit, requireEdit } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import { canAddDocument, getLimits, hasAiExtractionQuota } from "@/lib/billing";
 
+async function createDocumentFromUpload(params: {
+  householdId: string;
+  file: File;
+  personId: string | null;
+  assetId: string | null;
+  accountId: string | null;
+  skipAi: boolean;
+  supersedesId?: string;
+}) {
+  const mimeType = params.file.type || "application/octet-stream";
+  const buffer = Buffer.from(await params.file.arrayBuffer());
+  const ext = path.extname(params.file.name) || "";
+
+  // Private access: these are household IDs, insurance policies, medical
+  // letters. The blob pathname (not a public URL) is what gets stored and
+  // read back through the authenticated /api/documents/[id]/file route.
+  const blob = await put(`${params.householdId}/${crypto.randomUUID()}${ext}`, buffer, {
+    access: "private",
+    contentType: mimeType,
+  });
+
+  const extraction = await extractDocument(params.file.name, buffer, mimeType, params.skipAi);
+
+  return prisma.document.create({
+    data: {
+      title: extraction.title,
+      type: extraction.type,
+      status: "PENDING_REVIEW",
+      fileUrl: blob.pathname,
+      mimeType,
+      merchant: extraction.merchant ?? null,
+      amount: extraction.amount ?? null,
+      currency: extraction.currency ?? null,
+      dueDate: extraction.dueDate ?? null,
+      expiryDate: extraction.expiryDate ?? null,
+      policyNumber: extraction.policyNumber ?? null,
+      extractedText: extraction.extractedText ?? null,
+      suggestedTaskTitle: extraction.suggestedTaskTitle,
+      suggestedTaskType: extraction.suggestedTaskType,
+      suggestedTaskDueDate: extraction.suggestedTaskDueDate,
+      householdId: params.householdId,
+      personId: params.personId,
+      assetId: params.assetId,
+      accountId: params.accountId,
+      supersedesId: params.supersedesId ?? null,
+    },
+  });
+}
+
 export async function uploadDocument(_prevState: { error?: string } | undefined, formData: FormData) {
   const user = await requireUser();
   if (!canEdit(user, "documents")) {
@@ -30,45 +79,10 @@ export async function uploadDocument(_prevState: { error?: string } | undefined,
     return { error: "Please choose a file to upload." };
   }
 
-  const mimeType = file.type || "application/octet-stream";
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = path.extname(file.name) || "";
-
-  // Private access: these are household IDs, insurance policies, medical
-  // letters. The blob pathname (not a public URL) is what gets stored and
-  // read back through the authenticated /api/documents/[id]/file route.
-  const blob = await put(`${user.householdId}/${crypto.randomUUID()}${ext}`, buffer, {
-    access: "private",
-    contentType: mimeType,
-  });
-
   // Over quota degrades to the filename-guess fallback rather than
   // blocking the upload outright - same path as no API key configured.
   const skipAi = !(await hasAiExtractionQuota(user.householdId, user.household));
-  const extraction = await extractDocument(file.name, buffer, mimeType, skipAi);
-
-  const document = await prisma.document.create({
-    data: {
-      title: extraction.title,
-      type: extraction.type,
-      status: "PENDING_REVIEW",
-      fileUrl: blob.pathname,
-      mimeType,
-      merchant: extraction.merchant ?? null,
-      amount: extraction.amount ?? null,
-      currency: extraction.currency ?? null,
-      dueDate: extraction.dueDate ?? null,
-      expiryDate: extraction.expiryDate ?? null,
-      policyNumber: extraction.policyNumber ?? null,
-      suggestedTaskTitle: extraction.suggestedTaskTitle,
-      suggestedTaskType: extraction.suggestedTaskType,
-      suggestedTaskDueDate: extraction.suggestedTaskDueDate,
-      householdId: user.householdId,
-      personId,
-      assetId,
-      accountId,
-    },
-  });
+  const document = await createDocumentFromUpload({ householdId: user.householdId, file, personId, assetId, accountId, skipAi });
 
   await logAudit({
     householdId: user.householdId,
@@ -76,12 +90,58 @@ export async function uploadDocument(_prevState: { error?: string } | undefined,
     userName: user.name,
     action: "created",
     category: "documents",
-    entityLabel: extraction.title,
+    entityLabel: document.title,
     detail: "uploaded, pending review",
   });
 
   revalidatePath("/documents");
   redirect(`/documents/${document.id}`);
+}
+
+// Uploads a replacement for an existing document rather than a brand new
+// one - the old document is kept (status SUPERSEDED) for history instead
+// of being overwritten or deleted. Doesn't count against the document
+// limit since canAddDocument already excludes SUPERSEDED rows: one active
+// document in, one active document out.
+export async function uploadNewVersion(oldDocumentId: string, _prevState: { error?: string } | undefined, formData: FormData) {
+  const user = await requireUser();
+  if (!canEdit(user, "documents")) {
+    return { error: "You don't have permission to upload documents." };
+  }
+
+  const old = await prisma.document.findFirst({ where: { id: oldDocumentId, householdId: user.householdId } });
+  if (!old) return { error: "Document not found." };
+
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) {
+    return { error: "Please choose a file to upload." };
+  }
+
+  const skipAi = !(await hasAiExtractionQuota(user.householdId, user.household));
+  const newDocument = await createDocumentFromUpload({
+    householdId: user.householdId,
+    file,
+    personId: old.personId,
+    assetId: old.assetId,
+    accountId: old.accountId,
+    skipAi,
+    supersedesId: old.id,
+  });
+
+  await prisma.document.update({ where: { id: old.id }, data: { status: "SUPERSEDED" } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "created",
+    category: "documents",
+    entityLabel: newDocument.title,
+    detail: `new version of "${old.title}"`,
+  });
+
+  revalidatePath("/documents");
+  redirect(`/documents/${newDocument.id}`);
 }
 
 export async function confirmDocument(

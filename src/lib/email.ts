@@ -210,6 +210,73 @@ export async function sendTwoFactorRecoveryEmail(params: { to: string; recoveryU
   });
 }
 
+export async function sendLegacyAccessRequestedEmail(params: {
+  to: string;
+  adminName: string;
+  householdName: string;
+  contactName: string;
+  grantAt: Date;
+  cancelUrl: string;
+}) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">Emergency access requested</h2>
+      <p style="font-size:14px;color:#78716c;">
+        Hi ${escapeHtml(params.adminName)} — ${escapeHtml(params.contactName)} has requested emergency access to
+        ${escapeHtml(params.householdName)} using the link you gave them.
+      </p>
+      <p style="font-size:14px;color:#44403c;">
+        Unless cancelled, they'll automatically be added as a member on
+        <strong>${escapeHtml(params.grantAt.toDateString())}</strong>.
+      </p>
+      <p style="margin-top:20px;">
+        <a href="${params.cancelUrl}" style="background:#dc2626;color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;">Cancel this request</a>
+      </p>
+      <p style="color:#78716c;font-size:13px;margin-top:20px;">
+        If this is expected — you're unavailable and arranged for them to step in — no action is needed.
+      </p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: `Emergency access requested for ${params.householdName}`,
+    html,
+  });
+}
+
+export async function sendLegacyAccessGrantedEmail(params: { to: string; contactName: string; householdName: string; setPasswordUrl: string }) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">You now have access to ${escapeHtml(params.householdName)}</h2>
+      <p style="font-size:14px;color:#78716c;">
+        Hi ${escapeHtml(params.contactName)} — your emergency access request for ${escapeHtml(params.householdName)}
+        on Handled has gone through. Set a password to sign in.
+      </p>
+      <p style="margin-top:20px;">
+        <a href="${params.setPasswordUrl}" style="background:#1c1917;color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;">Set your password</a>
+      </p>
+      <p style="color:#a8a29e;font-size:12px;margin-top:12px;">This link expires in 1 hour.</p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: `You now have access to ${params.householdName} on Handled`,
+    html,
+  });
+}
+
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }

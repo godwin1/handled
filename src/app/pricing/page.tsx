@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PLAN_LABELS, PLAN_PRICES, PLAN_LIMITS } from "@/lib/billing";
+import { PLAN_LABELS, PLAN_PRICES, PLAN_PRICES_ANNUAL, PLAN_LIMITS } from "@/lib/billing";
 
 export const metadata = { title: "Pricing — Handled" };
 
@@ -29,11 +29,15 @@ export default function PricingPage() {
                   ${PLAN_PRICES[plan]}
                   <span className="text-sm text-stone-400">/mo</span>
                 </p>
+                {plan !== "free" && (
+                  <p className="text-xs text-stone-400">or ${PLAN_PRICES_ANNUAL[plan]}/yr (save ~17%)</p>
+                )}
               </div>
               <ul className="text-sm text-stone-600 space-y-1.5">
                 <li>{formatLimit(PLAN_LIMITS[plan].members)} household members</li>
                 <li>{formatLimit(PLAN_LIMITS[plan].documents)} documents</li>
                 <li>{formatLimit(PLAN_LIMITS[plan].aiExtractions)} AI extractions/month</li>
+                <li>{formatLimit(PLAN_LIMITS[plan].aiChatQueries)} AI chat questions/month</li>
                 <li className={PLAN_LIMITS[plan].sharing ? "" : "text-stone-300"}>Document sharing outside household</li>
                 <li className={PLAN_LIMITS[plan].auditLog ? "" : "text-stone-300"}>Activity log</li>
                 <li>Tasks, reminders, push notifications, security (2FA, etc.) — all plans</li>

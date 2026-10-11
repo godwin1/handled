@@ -6,6 +6,7 @@ import { friendlyUserAgent } from "@/lib/userAgent";
 import { DisableTwoFactorForm } from "@/components/DisableTwoFactorForm";
 import { RegenerateBackupCodesButton } from "@/components/RegenerateBackupCodesButton";
 import { SendTestPushButton } from "@/components/SendTestPushButton";
+import { AppLockToggle } from "@/components/AppLockToggle";
 
 export default async function AccountPage() {
   const user = await requireUser();
@@ -63,6 +64,9 @@ export default async function AccountPage() {
             : `${pushTokenCount} device${pushTokenCount === 1 ? "" : "s"} registered.`}
         </p>
         <SendTestPushButton />
+        <div className="border-t border-stone-100 pt-3">
+          <AppLockToggle />
+        </div>
       </section>
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">

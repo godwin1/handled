@@ -4,10 +4,12 @@ import { getCurrentUser } from "@/lib/auth";
 import { logOut } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { ReminderSync } from "@/components/ReminderSync";
+import { AppLockGate } from "@/components/AppLockGate";
 import { canView, type Category } from "@/lib/permissions";
 
 const NAV: { href: string; label: string; category?: Category }[] = [
   { href: "/dashboard", label: "This week" },
+  { href: "/ask", label: "Ask" },
   { href: "/documents", label: "Documents", category: "documents" },
   { href: "/tasks", label: "Tasks", category: "tasks" },
   { href: "/people", label: "People", category: "people" },
@@ -31,6 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const reminderTasks = openTasks.map((t) => ({ ...t, dueDate: t.dueDate.toISOString() }));
 
   return (
+    <AppLockGate>
     <div className="min-h-screen bg-background">
       <ReminderSync tasks={reminderTasks} />
       <header className="border-b border-stone-200/70 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 sticky top-0 z-10">
@@ -77,7 +80,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Link href="/privacy" className="hover:text-stone-600 underline">
           Privacy
         </Link>
+        <Link href="/support" className="hover:text-stone-600 underline">
+          Support
+        </Link>
       </footer>
     </div>
+    </AppLockGate>
   );
 }

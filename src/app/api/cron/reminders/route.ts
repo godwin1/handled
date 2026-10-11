@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendDigestEmail, type DigestItem } from "@/lib/email";
+import { sendDigestEmail, sendLegacyAccessGrantedEmail, type DigestItem } from "@/lib/email";
 import { sendPushToUser } from "@/lib/push";
+import { logAudit } from "@/lib/audit";
 
 function startOfToday() {
   const d = new Date();
@@ -41,6 +42,64 @@ async function cleanupExpiredRows() {
   ]);
 }
 
+// Called by the daily cron too - any pending emergency access request past
+// its wait period and not cancelled becomes a real (non-admin) member.
+// Skips (and leaves pending, to retry tomorrow) if the contact's email
+// already belongs to some account - rare, but creating it would violate
+// the unique email constraint anyway.
+async function grantDueLegacyAccess() {
+  const dueRequests = await prisma.legacyAccessRequest.findMany({
+    where: { status: "pending", grantAt: { lte: new Date() } },
+    include: { link: { include: { household: { select: { id: true, name: true } } } } },
+  });
+
+  const appUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000";
+
+  for (const request of dueRequests) {
+    const existingUser = await prisma.user.findUnique({ where: { email: request.link.contactEmail } });
+    if (existingUser) {
+      console.error(`Legacy access grant skipped - ${request.link.contactEmail} already has an account`);
+      continue;
+    }
+
+    const newUser = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          name: request.link.contactName,
+          email: request.link.contactEmail,
+          passwordHash: crypto.randomUUID(), // unusable until set via the reset link below
+          householdId: request.link.householdId,
+        },
+      });
+      await tx.legacyAccessRequest.update({ where: { id: request.id }, data: { status: "granted", grantedAt: new Date() } });
+      return created;
+    });
+
+    const resetToken = await prisma.passwordResetToken.create({
+      data: { token: crypto.randomUUID(), userId: newUser.id, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
+    });
+
+    await sendLegacyAccessGrantedEmail({
+      to: newUser.email,
+      contactName: newUser.name,
+      householdName: request.link.household.name,
+      setPasswordUrl: `${appUrl}/reset-password/${resetToken.token}`,
+    }).catch((err) => console.error("Failed to send legacy access granted email:", err));
+
+    await logAudit({
+      householdId: request.link.householdId,
+      userId: newUser.id,
+      userName: newUser.name,
+      action: "member_joined",
+      category: "member",
+      entityLabel: newUser.name,
+      detail: "via emergency access",
+    });
+  }
+}
+
 // Triggered daily by Vercel Cron (see vercel.json). Sends each household
 // member a digest of what's overdue/due this week, mirroring the dashboard's
 // "This week" section - re-sent daily for as long as it's still true, rather
@@ -53,6 +112,7 @@ export async function GET(request: NextRequest) {
   }
 
   await cleanupExpiredRows().catch((err) => console.error("Cron cleanup failed:", err));
+  await grantDueLegacyAccess().catch((err) => console.error("Legacy access grant failed:", err));
 
   const today = startOfToday();
   const weekEnd = addDays(today, 7);

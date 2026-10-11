@@ -13,7 +13,7 @@ export default async function DocumentsPage() {
 
   const [documents, people, assets, accounts] = await Promise.all([
     prisma.document.findMany({
-      where: { householdId: user.householdId },
+      where: { householdId: user.householdId, status: { not: "SUPERSEDED" } },
       orderBy: { createdAt: "desc" },
       include: {
         person: { select: { name: true } },

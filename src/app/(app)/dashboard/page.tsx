@@ -65,7 +65,7 @@ export default async function DashboardPage() {
             take: 5,
           })
         : [],
-      seeDocuments ? prisma.document.count({ where: { householdId: user.householdId } }) : 0,
+      seeDocuments ? prisma.document.count({ where: { householdId: user.householdId, status: { not: "SUPERSEDED" } } }) : 0,
       seeDocuments ? prisma.document.count({ where: { householdId: user.householdId, status: "CONFIRMED" } }) : 0,
       seeAccounts
         ? prisma.account.findMany({
