@@ -11,7 +11,7 @@ export function CalendarSyncSection({ initialUrl }: { initialUrl: string }) {
   return (
     <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-3">
       <div>
-        <h2 className="text-sm font-medium text-stone-900">Calendar sync</h2>
+        <h2 className="text-sm font-semibold text-stone-900">Calendar sync</h2>
         <p className="text-xs text-stone-500 mt-0.5">
           Subscribe in Google Calendar, Apple Calendar, or Outlook to see task due dates and document expirations
           alongside the rest of your calendar. Updates automatically — no need to re-subscribe.

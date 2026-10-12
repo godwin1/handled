@@ -75,7 +75,7 @@ export default async function SearchPage({
               {results.map((r, i) => (
                 <Link key={i} href={r.href} className="flex items-center justify-between py-3 hover:bg-stone-50 -mx-5 px-5">
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{r.title}</p>
+                    <p className="text-sm font-semibold text-stone-900">{r.title}</p>
                     <p className="text-xs text-stone-500 capitalize">{r.subtitle}</p>
                   </div>
                   <Badge label={r.kind} />

@@ -90,7 +90,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 space-y-4">
-        <h2 className="text-sm font-medium text-stone-900">Comments</h2>
+        <h2 className="text-sm font-semibold text-stone-900">Comments</h2>
         {task.comments.length === 0 ? (
           <p className="text-sm text-stone-400">No comments yet.</p>
         ) : (

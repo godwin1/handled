@@ -62,7 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </nav>
       </header>
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">{children}</main>
-      <footer className="max-w-5xl mx-auto px-4 sm:px-6 pb-8 text-xs text-stone-400 space-x-3">
+      <footer className="max-w-5xl mx-auto px-4 sm:px-6 pb-8 text-xs text-stone-400 text-center space-x-3">
         <Link href="/terms" className="hover:text-stone-600 underline">
           Terms
         </Link>

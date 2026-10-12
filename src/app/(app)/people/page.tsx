@@ -4,6 +4,9 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPerson, deletePerson } from "@/lib/actions/people";
 import { canEdit, canView } from "@/lib/permissions";
+import { Avatar } from "@/components/Avatar";
+import { EmptyState } from "@/components/EmptyState";
+import { Users } from "lucide-react";
 
 const RELATIONSHIPS = ["self", "partner", "child", "parent", "other"];
 
@@ -23,20 +26,23 @@ export default async function PeoplePage() {
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         {people.length === 0 ? (
-          <p className="text-sm text-stone-400">No one added yet.</p>
+          <EmptyState icon={Users} label="No one added yet." />
         ) : (
           <div className="divide-y divide-stone-100">
             {people.map((person) => (
-              <div key={person.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-stone-900">{person.name}</p>
-                  <p className="text-xs text-stone-500 capitalize">
-                    {person.relationship}
-                    {person.dateOfBirth && ` · born ${person.dateOfBirth.toLocaleDateString()}`}
-                  </p>
+              <div key={person.id} className="flex items-center gap-3 justify-between py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar name={person.name} size="sm" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-stone-900 truncate">{person.name}</p>
+                    <p className="text-xs text-stone-500 capitalize truncate">
+                      {person.relationship}
+                      {person.dateOfBirth && ` · born ${person.dateOfBirth.toLocaleDateString()}`}
+                    </p>
+                  </div>
                 </div>
                 {editable && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <Link href={`/people/${person.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
                       Edit
                     </Link>
@@ -55,7 +61,7 @@ export default async function PeoplePage() {
 
       {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-3">Add a person</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Add a person</h2>
         <form action={createPerson} className="flex flex-wrap items-end gap-3">
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Name</label>

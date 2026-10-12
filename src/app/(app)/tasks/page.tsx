@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TaskRow } from "@/components/TaskRow";
+import { EmptyState } from "@/components/EmptyState";
 import { createTask } from "@/lib/actions/tasks";
 import { canEdit, canView } from "@/lib/permissions";
+import { CheckCircle2 } from "lucide-react";
 
 const TASK_TYPES = ["pay", "renew", "cancel", "book", "submit", "call", "other"];
 const RECURRENCES = [
@@ -48,9 +50,9 @@ export default async function TasksPage() {
       <h1 className="font-display text-2xl font-medium text-stone-900">Tasks</h1>
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-1">Open</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-1">Open</h2>
         {openTasks.length === 0 ? (
-          <p className="text-sm text-stone-400 py-2">Nothing open.</p>
+          <EmptyState icon={CheckCircle2} label="Nothing open." />
         ) : (
           <div>
             {openTasks.map((task) => (
@@ -62,7 +64,7 @@ export default async function TasksPage() {
 
       {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-3">Add a task</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Add a task</h2>
         <form action={createTask} className="flex flex-wrap items-end gap-3">
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Title</label>
@@ -145,7 +147,7 @@ export default async function TasksPage() {
 
       {doneTasks.length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-          <h2 className="text-sm font-medium text-stone-900 mb-1">Recently done</h2>
+          <h2 className="text-sm font-semibold text-stone-900 mb-1">Recently done</h2>
           <div>
             {doneTasks.map((task) => (
               <TaskRow key={task.id} task={task} editable={editable} timezone={user.timezone} />

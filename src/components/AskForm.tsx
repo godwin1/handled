@@ -32,7 +32,7 @@ export function AskForm() {
         )}
         {history.map((item, i) => (
           <div key={i} className="space-y-1.5">
-            <p className="text-sm font-medium text-stone-900">{item.question}</p>
+            <p className="text-sm font-semibold text-stone-900">{item.question}</p>
             {item.error ? (
               <p className="text-sm text-rust-600">{item.error}</p>
             ) : item.answer ? (

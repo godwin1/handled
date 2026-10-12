@@ -4,6 +4,7 @@ import { PermissionSelect } from "@/components/PermissionSelect";
 import { RemoveMemberButton } from "@/components/RemoveMemberButton";
 import { ResetTwoFactorButton } from "@/components/ResetTwoFactorButton";
 import { HouseholdPageHeader } from "@/components/HouseholdPageHeader";
+import { Avatar } from "@/components/Avatar";
 import { setMemberAdmin } from "@/lib/actions/household";
 import { CATEGORIES, getLevel } from "@/lib/permissions";
 
@@ -24,24 +25,27 @@ export default async function HouseholdPage() {
       <HouseholdPageHeader householdName={user.household.name} isAdmin={user.isAdmin} />
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-3">Members</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Members</h2>
         <div className="divide-y divide-stone-100">
           {members.map((m) => {
             const canDemote = !m.isAdmin || adminCount > 1;
             return (
               <div key={m.id} className="py-3 space-y-2">
                 <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-stone-900 flex items-center gap-2">
-                      {m.name}
-                      {m.id === user.id && <span className="text-xs text-stone-400">(you)</span>}
-                      {m.isAdmin && (
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-accent-100 text-accent-700">
-                          Admin
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-stone-500">{m.email}</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Avatar name={m.name} size="sm" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+                        {m.name}
+                        {m.id === user.id && <span className="text-xs text-stone-400">(you)</span>}
+                        {m.isAdmin && (
+                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ring-black/5 bg-accent-100 text-accent-700">
+                            Admin
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-xs text-stone-500">{m.email}</p>
+                    </div>
                   </div>
                   {user.isAdmin && (
                     <div className="flex items-center gap-3 shrink-0">
@@ -87,7 +91,7 @@ export default async function HouseholdPage() {
       {user.isAdmin && (
         <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-medium text-stone-900">Export your data</h2>
+            <h2 className="text-sm font-semibold text-stone-900">Export your data</h2>
             <p className="text-xs text-stone-500 mt-0.5">
               Download everything — people, assets, accounts, tasks, and documents (including the files) — as a zip.
             </p>

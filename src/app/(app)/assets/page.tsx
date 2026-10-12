@@ -4,6 +4,9 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAsset, deleteAsset } from "@/lib/actions/assets";
 import { canEdit, canView } from "@/lib/permissions";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { EmptyState } from "@/components/EmptyState";
+import { Boxes } from "lucide-react";
 
 const TYPES = ["home", "rental", "car", "scooter", "phone", "other"];
 
@@ -27,21 +30,24 @@ export default async function AssetsPage() {
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         {assets.length === 0 ? (
-          <p className="text-sm text-stone-400">No assets added yet.</p>
+          <EmptyState icon={Boxes} label="No assets added yet." />
         ) : (
           <div className="divide-y divide-stone-100">
             {assets.map((asset) => (
-              <div key={asset.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-stone-900">{asset.name}</p>
-                  <p className="text-xs text-stone-500 capitalize">
-                    {asset.type}
-                    {asset.owner && ` · ${asset.owner.name}`}
-                    {asset.details && ` · ${asset.details}`}
-                  </p>
+              <div key={asset.id} className="flex items-center gap-3 justify-between py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <CategoryIcon type={asset.type} size="sm" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-stone-900 truncate">{asset.name}</p>
+                    <p className="text-xs text-stone-500 capitalize truncate">
+                      {asset.type}
+                      {asset.owner && ` · ${asset.owner.name}`}
+                      {asset.details && ` · ${asset.details}`}
+                    </p>
+                  </div>
                 </div>
                 {editable && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <Link href={`/assets/${asset.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
                       Edit
                     </Link>
@@ -60,7 +66,7 @@ export default async function AssetsPage() {
 
       {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-3">Add an asset</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Add an asset</h2>
         <form action={createAsset} className="flex flex-wrap items-end gap-3">
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Name</label>

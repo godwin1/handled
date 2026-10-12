@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge } from "@/components/Badge";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { toggleTaskStatus } from "@/lib/actions/tasks";
 import { startOfTodayFor } from "@/lib/timezone";
 
@@ -76,6 +76,10 @@ export function TaskRow({
         </div>
       )}
 
+      <div className={done ? "opacity-50" : undefined}>
+        <CategoryIcon type={task.type} size="sm" />
+      </div>
+
       <div className="flex-1 min-w-0">
         <Link
           href={`/tasks/${task.id}`}
@@ -86,7 +90,7 @@ export function TaskRow({
           {task.title}
         </Link>
         <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-500">
-          <Badge label={task.type} />
+          <span className="capitalize">{task.type}</span>
           {task.recurrence && <span title={`Repeats ${task.recurrence}`}>↻ {task.recurrence}</span>}
           {related && <span>{related}</span>}
           {task.assignee && <span>· {task.assignee.name}</span>}

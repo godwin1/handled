@@ -93,7 +93,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       {editable && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 space-y-4">
           <div>
-            <h2 className="text-sm font-medium text-stone-900">Share outside your household</h2>
+            <h2 className="text-sm font-semibold text-stone-900">Share outside your household</h2>
             <p className="text-xs text-stone-500 mt-0.5">
               Anyone with the link can view this document without an account — for an accountant, landlord, etc.
             </p>
@@ -129,7 +129,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       {editable && !document.supersededBy && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 space-y-3">
           <div>
-            <h2 className="text-sm font-medium text-stone-900">Version history</h2>
+            <h2 className="text-sm font-semibold text-stone-900">Version history</h2>
             <p className="text-xs text-stone-500 mt-0.5">
               Got a renewed or corrected copy? Replace it here — the old one stays on record below.
             </p>

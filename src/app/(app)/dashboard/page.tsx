@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { TaskRow } from "@/components/TaskRow";
 import { Greeting } from "@/components/Greeting";
+import { EmptyState } from "@/components/EmptyState";
 import { canEdit, canView } from "@/lib/permissions";
 import { monthlyTotalsByCurrency, formatMoneyTotals } from "@/lib/money";
 import { startOfTodayFor, addDays } from "@/lib/timezone";
+import { CheckCircle2, CalendarDays } from "lucide-react";
 
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -116,9 +118,9 @@ export default async function DashboardPage() {
       {seeTasks && (
         <>
           <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-            <h2 className="text-sm font-medium text-stone-900 mb-1">Overdue &amp; due this week</h2>
+            <h2 className="text-sm font-semibold text-stone-900 mb-1">Overdue &amp; due this week</h2>
             {overdueTasks.length === 0 && thisWeekTasks.length === 0 ? (
-              <p className="text-sm text-stone-400 py-2">Nothing here.</p>
+              <EmptyState icon={CheckCircle2} label="Nothing here." />
             ) : (
               <div>
                 {overdueTasks.map((task) => (
@@ -132,9 +134,9 @@ export default async function DashboardPage() {
           </section>
 
           <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-            <h2 className="text-sm font-medium text-stone-900 mb-1">Next 30 days</h2>
+            <h2 className="text-sm font-semibold text-stone-900 mb-1">Next 30 days</h2>
             {next30Tasks.length === 0 ? (
-              <p className="text-sm text-stone-400 py-2">Nothing scheduled.</p>
+              <EmptyState icon={CalendarDays} label="Nothing scheduled." />
             ) : (
               <div>
                 {next30Tasks.map((task) => (
@@ -148,7 +150,7 @@ export default async function DashboardPage() {
 
       {seeDocuments && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-stone-900">Documents</h2>
+          <h2 className="text-sm font-semibold text-stone-900">Documents</h2>
           <p className="text-sm text-stone-500">
             {confirmedCount} filed · {documentCount - confirmedCount} pending review
           </p>
@@ -157,7 +159,7 @@ export default async function DashboardPage() {
 
       {seeAccounts && Object.keys(monthlyTotals).length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-stone-900">Monthly bills</h2>
+          <h2 className="text-sm font-semibold text-stone-900">Monthly bills</h2>
           <Link href="/accounts" className="text-sm text-stone-500 hover:text-accent-600">
             {formatMoneyTotals(monthlyTotals, "/month (est.)")}
           </Link>

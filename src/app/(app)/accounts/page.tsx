@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { createAccount, deleteAccount } from "@/lib/actions/accounts";
 import { canEdit, canView } from "@/lib/permissions";
 import { monthlyTotalsByCurrency, formatMoney, formatMoneyTotals } from "@/lib/money";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { EmptyState } from "@/components/EmptyState";
+import { Wallet } from "lucide-react";
 
 const TYPES = ["utility", "internet", "insurance", "bank", "school", "medical", "other"];
 const BILLING_CYCLES = [
@@ -45,7 +48,7 @@ export default async function AccountsPage() {
 
       {Object.keys(monthlyTotals).length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-stone-900">Recurring bills</h2>
+          <h2 className="text-sm font-semibold text-stone-900">Recurring bills</h2>
           <p className="text-sm text-stone-500">
             {formatMoneyTotals(monthlyTotals, "/month")} · {formatMoneyTotals(yearlyTotals, "/year (est.)")}
           </p>
@@ -54,23 +57,26 @@ export default async function AccountsPage() {
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         {accounts.length === 0 ? (
-          <p className="text-sm text-stone-400">No accounts added yet.</p>
+          <EmptyState icon={Wallet} label="No accounts added yet." />
         ) : (
           <div className="divide-y divide-stone-100">
             {accounts.map((account) => (
-              <div key={account.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-stone-900">{account.name}</p>
-                  <p className="text-xs text-stone-500 capitalize">
-                    {account.type}
-                    {account.provider && ` · ${account.provider}`}
-                    {account.person && ` · ${account.person.name}`}
-                    {account.asset && ` · ${account.asset.name}`}
-                    {billingLabel(account) && ` · ${billingLabel(account)}`}
-                  </p>
+              <div key={account.id} className="flex items-center gap-3 justify-between py-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <CategoryIcon type={account.type} size="sm" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-stone-900 truncate">{account.name}</p>
+                    <p className="text-xs text-stone-500 capitalize truncate">
+                      {account.type}
+                      {account.provider && ` · ${account.provider}`}
+                      {account.person && ` · ${account.person.name}`}
+                      {account.asset && ` · ${account.asset.name}`}
+                      {billingLabel(account) && ` · ${billingLabel(account)}`}
+                    </p>
+                  </div>
                 </div>
                 {editable && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <Link href={`/accounts/${account.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
                       Edit
                     </Link>
@@ -89,7 +95,7 @@ export default async function AccountsPage() {
 
       {editable && (
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-3">Add an account</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-3">Add an account</h2>
         <form action={createAccount} className="flex flex-wrap items-end gap-3">
           <div>
             <label className="block text-xs font-medium text-stone-600 mb-1">Name</label>

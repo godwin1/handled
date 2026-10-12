@@ -121,14 +121,14 @@ export default async function ReportsPage() {
 
       {seeAccounts && spendByType.length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-          <h2 className="text-sm font-medium text-stone-900 mb-4">Monthly spend by type</h2>
+          <h2 className="text-sm font-semibold text-stone-900 mb-4">Monthly spend by type</h2>
           <BarChart data={spendByType} orientation="horizontal" />
         </section>
       )}
 
       {seeTasks && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-          <h2 className="text-sm font-medium text-stone-900 mb-4">Tasks completed per month</h2>
+          <h2 className="text-sm font-semibold text-stone-900 mb-4">Tasks completed per month</h2>
           <BarChart
             data={monthLabels.map((label, i) => ({ label, value: tasksCompletedPerMonth[i], displayValue: String(tasksCompletedPerMonth[i]) }))}
           />
@@ -137,7 +137,7 @@ export default async function ReportsPage() {
 
       {seeDocuments && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
-          <h2 className="text-sm font-medium text-stone-900 mb-4">Documents added per month</h2>
+          <h2 className="text-sm font-semibold text-stone-900 mb-4">Documents added per month</h2>
           <BarChart
             data={monthLabels.map((label, i) => ({ label, value: documentsAddedPerMonth[i], displayValue: String(documentsAddedPerMonth[i]) }))}
           />

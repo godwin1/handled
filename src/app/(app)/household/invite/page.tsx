@@ -17,7 +17,7 @@ export default async function InviteHouseholdPage() {
       <HouseholdPageHeader householdName={user.household.name} isAdmin={user.isAdmin} />
 
       <section className="bg-stone-50 border border-stone-200 rounded-xl p-5">
-        <h2 className="text-sm font-medium text-stone-900 mb-1">Invite someone</h2>
+        <h2 className="text-sm font-semibold text-stone-900 mb-1">Invite someone</h2>
         <p className="text-xs text-stone-500 mb-3">
           Create a link and send it to them yourself (text, email, however). It works once and expires in 7 days.
         </p>
@@ -26,7 +26,7 @@ export default async function InviteHouseholdPage() {
 
       {pendingInvites.length > 0 && (
         <section className="bg-stone-50 border border-stone-200 rounded-xl p-5">
-          <h2 className="text-sm font-medium text-stone-900 mb-3">Pending invites</h2>
+          <h2 className="text-sm font-semibold text-stone-900 mb-3">Pending invites</h2>
           <div className="divide-y divide-stone-200/70">
             {pendingInvites.map((invite) => (
               <div key={invite.id} className="flex items-center justify-between py-2">

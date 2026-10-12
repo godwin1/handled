@@ -31,7 +31,7 @@ export default async function AccountPage() {
 
       <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-medium text-stone-900">Two-factor authentication</h2>
+          <h2 className="text-sm font-semibold text-stone-900">Two-factor authentication</h2>
           <p className="text-xs text-stone-500 mt-0.5">
             {user.totpEnabled
               ? "Enabled — your authenticator app is required at sign-in."
@@ -57,7 +57,7 @@ export default async function AccountPage() {
       </section>
 
       <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-2">
-        <h2 className="text-sm font-medium text-stone-900">Push notifications</h2>
+        <h2 className="text-sm font-semibold text-stone-900">Push notifications</h2>
         <p className="text-xs text-stone-500">
           {pushTokenCount === 0
             ? "No devices registered yet — open the mobile app and allow notifications when prompted."
@@ -71,7 +71,7 @@ export default async function AccountPage() {
 
       <section className="bg-stone-50 border border-stone-200 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium text-stone-900">Active sessions</h2>
+          <h2 className="text-sm font-semibold text-stone-900">Active sessions</h2>
           {sessions.length > 1 && (
             <form action={revokeAllOtherSessions}>
               <button type="submit" className="text-xs text-stone-500 hover:text-rust-600">

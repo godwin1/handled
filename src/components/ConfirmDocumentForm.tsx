@@ -144,7 +144,7 @@ export function ConfirmDocumentForm({
 
       {isPending && (
         <div className="border-t border-stone-100 pt-4 space-y-3">
-          <label className="flex items-center gap-2 text-sm font-medium text-stone-900">
+          <label className="flex items-center gap-2 text-sm font-semibold text-stone-900">
             <input type="checkbox" name="createTask" defaultChecked className="rounded border-stone-300" />
             Create a task for this
           </label>

@@ -22,7 +22,7 @@ export default async function EmergencyAccessPage() {
 
       <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-medium text-stone-900">Emergency access</h2>
+          <h2 className="text-sm font-semibold text-stone-900">Emergency access</h2>
           <p className="text-xs text-stone-500 mt-0.5">
             Give someone outside your household (a spouse, an executor) a link they can use to request access if
             you're ever unreachable. A request waits before taking effect, and every admin gets an email with a
