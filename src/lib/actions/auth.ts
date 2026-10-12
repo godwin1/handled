@@ -3,13 +3,30 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { createSession, destroySession, hashPassword, verifyPassword, createPendingTwoFactor } from "@/lib/auth";
-import { sendPasswordResetEmail, sendLoginAlertEmail } from "@/lib/email";
+import { createSession, destroySession, getCurrentUser, hashPassword, verifyPassword, createPendingTwoFactor } from "@/lib/auth";
+import { sendPasswordResetEmail, sendLoginAlertEmail, sendVerificationEmail } from "@/lib/email";
 import { currentOrigin } from "@/lib/url";
 import { getClientIp, isRateLimited, recordAttempt } from "@/lib/rateLimit";
 import { isValidTimezone } from "@/lib/timezone";
+import { logAudit } from "@/lib/audit";
 
 const RESET_TOKEN_HOURS = 1;
+const VERIFICATION_TOKEN_HOURS = 24;
+
+// Fire-and-forget, like alertOnNewIp below - verification is informational
+// (see User.emailVerifiedAt), never blocks signup/resend if Resend is down.
+async function sendVerification(userId: string, email: string) {
+  try {
+    const expiresAt = new Date(Date.now() + VERIFICATION_TOKEN_HOURS * 60 * 60 * 1000);
+    const token = await prisma.emailVerificationToken.create({
+      data: { token: crypto.randomUUID(), userId, expiresAt },
+    });
+    const origin = await currentOrigin();
+    await sendVerificationEmail({ to: email, verifyUrl: `${origin}/verify-email/${token.token}` });
+  } catch (err) {
+    console.error("Failed to send verification email:", err);
+  }
+}
 
 export async function signUp(_prevState: { error?: string } | undefined, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
@@ -50,6 +67,7 @@ export async function signUp(_prevState: { error?: string } | undefined, formDat
   });
 
   await createSession(user.id);
+  await sendVerification(user.id, user.email);
   redirect("/dashboard");
 }
 
@@ -60,20 +78,34 @@ export async function logIn(_prevState: { error?: string } | undefined, formData
   const timezone = isValidTimezone(timezoneRaw) ? timezoneRaw : null;
 
   const ip = await getClientIp();
-  const rateLimitKey = `login:${ip}:${email}`;
-  if (await isRateLimited(rateLimitKey, 10, 15)) {
+  // Two layers: per-IP+email catches someone hammering one account, the
+  // higher per-IP-only threshold catches credential stuffing spread across
+  // many different email addresses from the same connection.
+  const ipKey = `login-ip:${ip}`;
+  const emailKey = `login:${ip}:${email}`;
+  if ((await isRateLimited(ipKey, 30, 15)) || (await isRateLimited(emailKey, 10, 15))) {
     return { error: "Too many failed attempts. Please wait a few minutes and try again." };
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    await recordAttempt(rateLimitKey);
+    await recordAttempt(ipKey);
+    await recordAttempt(emailKey);
     return { error: "Invalid email or password." };
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    await recordAttempt(rateLimitKey);
+    await recordAttempt(ipKey);
+    await recordAttempt(emailKey);
+    await logAudit({
+      householdId: user.householdId,
+      userId: user.id,
+      userName: user.name,
+      action: "login_failed",
+      category: "member",
+      entityLabel: ip,
+    });
     return { error: "Invalid email or password." };
   }
 
@@ -90,6 +122,16 @@ export async function logIn(_prevState: { error?: string } | undefined, formData
 
   await alertOnNewIp(user.id, user.email, user.name, ip);
   await createSession(user.id);
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "login_succeeded",
+    category: "member",
+    entityLabel: ip,
+  });
+
   redirect("/dashboard");
 }
 
@@ -115,6 +157,17 @@ async function alertOnNewIp(userId: string, email: string, name: string, ip: str
 }
 
 export async function logOut() {
+  const user = await getCurrentUser();
+  if (user) {
+    await logAudit({
+      householdId: user.householdId,
+      userId: user.id,
+      userName: user.name,
+      action: "logged_out",
+      category: "member",
+      entityLabel: "",
+    });
+  }
   await destroySession();
   redirect("/login");
 }
@@ -175,4 +228,33 @@ export async function resetPassword(
   ]);
 
   redirect("/login");
+}
+
+export async function verifyEmail(token: string): Promise<{ error?: string }> {
+  const verificationToken = await prisma.emailVerificationToken.findUnique({ where: { token } });
+  if (!verificationToken || verificationToken.usedAt || verificationToken.expiresAt < new Date()) {
+    return { error: "This verification link is no longer valid. Request a new one from your account page." };
+  }
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: verificationToken.userId }, data: { emailVerifiedAt: new Date() } }),
+    prisma.emailVerificationToken.update({ where: { id: verificationToken.id }, data: { usedAt: new Date() } }),
+  ]);
+
+  return {};
+}
+
+export async function resendVerificationEmail(): Promise<{ sent?: boolean; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Log in first." };
+  if (user.emailVerifiedAt) return { error: "Your email is already verified." };
+
+  const rateLimitKey = `verify-resend:${user.id}`;
+  if (await isRateLimited(rateLimitKey, 3, 15)) {
+    return { error: "Please wait a few minutes before requesting another email." };
+  }
+  await recordAttempt(rateLimitKey);
+
+  await sendVerification(user.id, user.email);
+  return { sent: true };
 }

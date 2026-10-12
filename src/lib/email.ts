@@ -110,6 +110,32 @@ export async function sendPasswordResetEmail(params: { to: string; resetUrl: str
   });
 }
 
+export async function sendVerificationEmail(params: { to: string; verifyUrl: string }) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">Confirm your email</h2>
+      <p style="font-size:14px;color:#78716c;">
+        Click below to confirm this is your email address for your Handled account.
+      </p>
+      <p style="margin-top:20px;">
+        <a href="${params.verifyUrl}" style="background:#1c1917;color:white;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;">Confirm email</a>
+      </p>
+      <p style="color:#a8a29e;font-size:12px;margin-top:24px;">This link expires in 24 hours. If you didn't create a Handled account, ignore this email.</p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: params.to,
+    subject: "Confirm your email for Handled",
+    html,
+  });
+}
+
 export async function sendInviteEmail(params: {
   to: string;
   inviterName: string;

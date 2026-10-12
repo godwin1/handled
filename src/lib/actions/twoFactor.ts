@@ -16,6 +16,7 @@ import {
 import { isRateLimited, recordAttempt, getClientIp } from "@/lib/rateLimit";
 import { sendTwoFactorRecoveryEmail } from "@/lib/email";
 import { currentOrigin } from "@/lib/url";
+import { logAudit } from "@/lib/audit";
 
 // Generates and stores a new secret but leaves totpEnabled false - it only
 // flips on once confirmEnrollment verifies a real code, so a half-finished
@@ -138,6 +139,16 @@ export async function verifyLoginCode(_prevState: { error?: string } | undefined
 
   await clearPendingTwoFactor();
   await createSession(user.id);
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "login_succeeded",
+    category: "member",
+    entityLabel: ip,
+  });
+
   redirect("/dashboard");
 }
 

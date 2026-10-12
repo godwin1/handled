@@ -74,6 +74,12 @@ model User {
   // (pre-existing users, or anyone who signed up before this existed).
   timezone String?
 
+  // Null until the address is confirmed via an emailed link. Verification
+  // is informational, not a usage gate - the account works immediately at
+  // signup (see src/lib/actions/auth.ts) so onboarding isn't interrupted;
+  // unverified users just see a reminder banner (src/components/VerifyEmailBanner.tsx).
+  emailVerifiedAt DateTime?
+
   // Household creator starts as admin. Admins manage member admin status
   // and per-category permissions, and are the only ones who can see the
   // audit log. Always implies full view+edit on every category, regardless
@@ -94,6 +100,7 @@ model User {
   sessions            Session[]
   sentInvites         Invite[]
   passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
   permissions         MemberPermission[]
   auditLogs           AuditLog[]
   backupCodes         BackupCode[]
@@ -171,6 +178,17 @@ model TwoFactorRecoveryToken {
 }
 
 model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerificationToken {
   id        String    @id @default(cuid())
   token     String    @unique
   expiresAt DateTime

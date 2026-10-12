@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         <div className="mt-8 bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6 sm:p-8 space-y-6 text-sm text-stone-700 leading-relaxed">
           <div>
             <h1 className="font-display text-2xl font-medium text-stone-900">Privacy Policy</h1>
-            <p className="text-xs text-stone-400 mt-1">Last updated October 4, 2026</p>
+            <p className="text-xs text-stone-400 mt-1">Last updated October 12, 2026</p>
           </div>
 
           <section className="space-y-2">
@@ -66,10 +66,12 @@ export default function PrivacyPage() {
           <section className="space-y-2">
             <h2 className="font-medium text-stone-900">Security</h2>
             <p>
-              Passwords are hashed, not stored in plaintext. Two-factor authentication secrets are encrypted at
-              rest. Uploaded documents are stored privately and served only to authenticated household members.
-              Sign-in attempts and sensitive actions are rate-limited. You can review and revoke your active
-              sessions from your account page at any time.
+              Passwords are hashed, not stored in plaintext. Two-factor authentication secrets and sensitive
+              document fields are encrypted at rest. Uploaded documents are stored privately and served only to
+              authenticated household members. Sign-in attempts and other sensitive actions are rate-limited, and
+              we email you when your account signs in from a new location. We log sign-ins and changes to your
+              household's data so you can review account activity. You can review and revoke your active sessions
+              from your account page at any time.
             </p>
           </section>
 
@@ -78,8 +80,10 @@ export default function PrivacyPage() {
             <p>
               We keep your data for as long as your account or household exists. Removing a member from a household
               deletes their login credentials; the household's shared data (documents, tasks, etc.) stays unless an
-              admin deletes it. If you'd like your account or household's data fully deleted, contact whoever
-              manages your household's Handled account.
+              admin deletes it. Deleted people, assets, accounts, tasks, and documents are kept in a recoverable
+              trash for 30 days before being permanently removed, so an accidental deletion can be undone. If
+              you'd like your account or household's data fully and immediately deleted, contact whoever manages
+              your household's Handled account.
             </p>
           </section>
 

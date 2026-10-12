@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ReminderSync } from "@/components/ReminderSync";
 import { AppLockGate } from "@/components/AppLockGate";
 import { SettingsMenu } from "@/components/SettingsMenu";
+import { VerifyEmailBanner } from "@/components/VerifyEmailBanner";
 import { canView, type Category } from "@/lib/permissions";
 
 const NAV: { href: string; label: string; category?: Category }[] = [
@@ -61,6 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
       </header>
+      {!user.emailVerifiedAt && <VerifyEmailBanner />}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">{children}</main>
       <footer className="max-w-5xl mx-auto px-4 sm:px-6 pb-8 text-xs text-stone-400 text-center space-x-3">
         <Link href="/terms" className="hover:text-stone-600 underline">

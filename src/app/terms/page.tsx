@@ -13,7 +13,7 @@ export default function TermsPage() {
         <div className="mt-8 bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6 sm:p-8 space-y-6 text-sm text-stone-700 leading-relaxed">
           <div>
             <h1 className="font-display text-2xl font-medium text-stone-900">Terms of Service</h1>
-            <p className="text-xs text-stone-400 mt-1">Last updated October 4, 2026</p>
+            <p className="text-xs text-stone-400 mt-1">Last updated October 12, 2026</p>
           </div>
 
           <section className="space-y-2">
@@ -46,6 +46,24 @@ export default function TermsPage() {
               add. We use your content only to provide the service back to you and your household — to extract
               details from uploaded documents, generate reminders, and display your data.
             </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="font-medium text-stone-900">Billing and subscriptions</h2>
+            <p>
+              Handled offers a free tier and paid Plus/Family subscriptions, billed monthly or annually through
+              Stripe. By subscribing, you authorize recurring charges to your payment method until you cancel.
+            </p>
+            <p>
+              You can cancel anytime from the Billing page, which opens Stripe&rsquo;s secure billing portal — no
+              need to contact us. Your paid access continues through the end of the period you&rsquo;ve already paid
+              for; we don&rsquo;t prorate or refund partial periods except where required by law or at our
+              discretion. When a subscription ends, the household drops to the Free tier&rsquo;s limits going
+              forward — existing people, assets, accounts, tasks, and documents aren&rsquo;t deleted, but adding
+              more beyond the Free tier&rsquo;s limits, and any Plus/Family-only features, become unavailable until
+              you resubscribe.
+            </p>
+            <p>Prices are shown before you subscribe and may change with notice; changes don&rsquo;t apply retroactively to a period you&rsquo;ve already paid for.</p>
           </section>
 
           <section className="space-y-2">
