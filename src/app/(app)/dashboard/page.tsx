@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { TaskRow } from "@/components/TaskRow";
+import { Greeting } from "@/components/Greeting";
 import { canEdit, canView } from "@/lib/permissions";
 import { monthlyEquivalent, formatMoney } from "@/lib/money";
 
@@ -77,16 +78,12 @@ export default async function DashboardPage() {
 
   const monthlyBillsTotal = billableAccounts.reduce((sum, a) => sum + monthlyEquivalent(a), 0);
   const dueThisWeekCount = overdueTasks.length + thisWeekTasks.length;
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
   const firstName = user.name.split(" ")[0];
 
   return (
     <div className="space-y-8">
       <div>
-        <p className="font-display text-base text-accent-600 mb-1">
-          {greeting}, {firstName}
-        </p>
+        <Greeting firstName={firstName} />
         <h1 className="font-display text-2xl font-medium text-stone-900">This week</h1>
         {seeTasks && (
           <p className="text-sm text-stone-500 mt-1 flex items-center gap-1.5">
