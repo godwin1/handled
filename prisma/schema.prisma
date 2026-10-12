@@ -245,6 +245,11 @@ model Person {
   dateOfBirth  DateTime?
   createdAt    DateTime  @default(now())
 
+  // Soft delete: set instead of actually removing the row, so a misclick
+  // is recoverable. Hidden from normal queries (see the Prisma client's
+  // soft-delete extension), purged for real 30 days later by the cron job.
+  deletedAt DateTime?
+
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
@@ -262,6 +267,9 @@ model Asset {
   details String?
 
   createdAt DateTime @default(now())
+
+  // See Person.deletedAt.
+  deletedAt DateTime?
 
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
@@ -288,6 +296,9 @@ model Account {
   billingCycle String?
 
   createdAt DateTime @default(now())
+
+  // See Person.deletedAt.
+  deletedAt DateTime?
 
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
@@ -343,6 +354,10 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // See Person.deletedAt. The blob file itself is kept until the purge
+  // job actually removes the row, so a restore has something to restore.
+  deletedAt DateTime?
+
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
 
@@ -394,6 +409,9 @@ model Task {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // See Person.deletedAt.
+  deletedAt DateTime?
 
   householdId String
   household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)

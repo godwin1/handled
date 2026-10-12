@@ -3,7 +3,8 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
-import { addComment, deleteTask, toggleTaskStatus } from "@/lib/actions/tasks";
+import { addComment, toggleTaskStatus } from "@/lib/actions/tasks";
+import { DeleteTaskButton } from "@/components/DeleteTaskButton";
 import { canEdit, canView } from "@/lib/permissions";
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,11 +46,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
               <Link href={`/tasks/${task.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
                 Edit
               </Link>
-              <form action={deleteTask.bind(null, task.id)}>
-                <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
-                  Delete
-                </button>
-              </form>
+              <DeleteTaskButton id={task.id} title={task.title} />
             </div>
           )}
         </div>

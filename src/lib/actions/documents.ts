@@ -1,7 +1,7 @@
 "use server";
 
 import path from "path";
-import { put, del } from "@vercel/blob";
+import { put } from "@vercel/blob";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -231,8 +231,9 @@ export async function deleteDocument(id: string) {
   const document = await prisma.document.findFirst({ where: { id, householdId: user.householdId } });
   if (!document) return;
 
-  await prisma.document.delete({ where: { id } });
-  await del(document.fileUrl).catch(() => {});
+  // The blob file is kept until the purge job actually removes the row 30
+  // days from now, so a restore within the window has something to restore.
+  await prisma.document.update({ where: { id }, data: { deletedAt: new Date() } });
 
   await logAudit({
     householdId: user.householdId,
@@ -247,6 +248,29 @@ export async function deleteDocument(id: string) {
   // The form that calls this lives on the document's own detail page -
   // without a redirect, Next.js refreshes that same route's server
   // component after the action resolves, re-running its lookup for a
-  // document that no longer exists and 404ing instead of navigating away.
+  // document the soft-delete filter now hides, and 404ing instead of
+  // navigating away.
   redirect("/documents");
+}
+
+export async function restoreDocument(id: string) {
+  const user = await requireUser();
+  requireEdit(user, "documents");
+
+  const document = await prisma.document.findFirst({ where: { id, householdId: user.householdId, deletedAt: { not: null } } });
+  if (!document) return;
+
+  await prisma.document.update({ where: { id }, data: { deletedAt: null } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "restored",
+    category: "documents",
+    entityLabel: document.title,
+  });
+
+  revalidatePath("/documents");
+  revalidatePath("/trash");
 }

@@ -179,7 +179,7 @@ export async function deleteTask(id: string) {
   const task = await prisma.task.findFirst({ where: { id, householdId: user.householdId } });
   if (!task) return;
 
-  await prisma.task.deleteMany({ where: { id, householdId: user.householdId } });
+  await prisma.task.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: new Date() } });
 
   await logAudit({
     householdId: user.householdId,
@@ -192,6 +192,34 @@ export async function deleteTask(id: string) {
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+  // The form that calls this lives on the task's own detail page - without
+  // a redirect, Next.js refreshes that route's server component after the
+  // action resolves, re-running its lookup for a task the soft-delete
+  // filter now hides, and 404ing instead of navigating away.
+  redirect("/tasks");
+}
+
+export async function restoreTask(id: string) {
+  const user = await requireUser();
+  requireEdit(user, "tasks");
+
+  const task = await prisma.task.findFirst({ where: { id, householdId: user.householdId, deletedAt: { not: null } } });
+  if (!task) return;
+
+  await prisma.task.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: null } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "restored",
+    category: "tasks",
+    entityLabel: task.title,
+  });
+
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  revalidatePath("/trash");
 }
 
 export async function addComment(taskId: string, formData: FormData) {

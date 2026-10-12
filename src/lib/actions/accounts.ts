@@ -99,7 +99,7 @@ export async function deleteAccount(id: string) {
   const account = await prisma.account.findFirst({ where: { id, householdId: user.householdId } });
   if (!account) return;
 
-  await prisma.account.deleteMany({ where: { id, householdId: user.householdId } });
+  await prisma.account.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: new Date() } });
 
   await logAudit({
     householdId: user.householdId,
@@ -111,4 +111,26 @@ export async function deleteAccount(id: string) {
   });
 
   revalidatePath("/accounts");
+}
+
+export async function restoreAccount(id: string) {
+  const user = await requireUser();
+  requireEdit(user, "accounts");
+
+  const account = await prisma.account.findFirst({ where: { id, householdId: user.householdId, deletedAt: { not: null } } });
+  if (!account) return;
+
+  await prisma.account.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: null } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "restored",
+    category: "accounts",
+    entityLabel: account.name,
+  });
+
+  revalidatePath("/accounts");
+  revalidatePath("/trash");
 }

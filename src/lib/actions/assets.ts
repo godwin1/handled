@@ -74,7 +74,7 @@ export async function deleteAsset(id: string) {
   const asset = await prisma.asset.findFirst({ where: { id, householdId: user.householdId } });
   if (!asset) return;
 
-  await prisma.asset.deleteMany({ where: { id, householdId: user.householdId } });
+  await prisma.asset.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: new Date() } });
 
   await logAudit({
     householdId: user.householdId,
@@ -86,4 +86,26 @@ export async function deleteAsset(id: string) {
   });
 
   revalidatePath("/assets");
+}
+
+export async function restoreAsset(id: string) {
+  const user = await requireUser();
+  requireEdit(user, "assets");
+
+  const asset = await prisma.asset.findFirst({ where: { id, householdId: user.householdId, deletedAt: { not: null } } });
+  if (!asset) return;
+
+  await prisma.asset.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: null } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "restored",
+    category: "assets",
+    entityLabel: asset.name,
+  });
+
+  revalidatePath("/assets");
+  revalidatePath("/trash");
 }

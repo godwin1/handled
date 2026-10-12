@@ -5,6 +5,7 @@ type AuditAction =
   | "created"
   | "updated"
   | "deleted"
+  | "restored"
   | "member_joined"
   | "member_removed"
   | "member_admin_changed"

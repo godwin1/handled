@@ -71,7 +71,7 @@ export async function deletePerson(id: string) {
   const person = await prisma.person.findFirst({ where: { id, householdId: user.householdId } });
   if (!person) return;
 
-  await prisma.person.deleteMany({ where: { id, householdId: user.householdId } });
+  await prisma.person.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: new Date() } });
 
   await logAudit({
     householdId: user.householdId,
@@ -83,4 +83,26 @@ export async function deletePerson(id: string) {
   });
 
   revalidatePath("/people");
+}
+
+export async function restorePerson(id: string) {
+  const user = await requireUser();
+  requireEdit(user, "people");
+
+  const person = await prisma.person.findFirst({ where: { id, householdId: user.householdId, deletedAt: { not: null } } });
+  if (!person) return;
+
+  await prisma.person.updateMany({ where: { id, householdId: user.householdId }, data: { deletedAt: null } });
+
+  await logAudit({
+    householdId: user.householdId,
+    userId: user.id,
+    userName: user.name,
+    action: "restored",
+    category: "people",
+    entityLabel: person.name,
+  });
+
+  revalidatePath("/people");
+  revalidatePath("/trash");
 }

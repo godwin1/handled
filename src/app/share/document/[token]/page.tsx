@@ -9,7 +9,10 @@ export default async function SharedDocumentPage({ params }: { params: Promise<{
     include: { document: true },
   });
 
-  const invalid = !link || !!link.revokedAt || link.expiresAt! < new Date();
+  // `include: { document: true }` is a nested relation fetch, which bypasses
+  // the soft-delete query extension (it only intercepts top-level
+  // prisma.document.* calls) - checked explicitly here instead.
+  const invalid = !link || !!link.revokedAt || link.expiresAt! < new Date() || !!link.document?.deletedAt;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">

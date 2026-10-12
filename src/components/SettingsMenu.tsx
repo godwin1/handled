@@ -65,6 +65,13 @@ export function SettingsMenu({ householdName }: { householdName: string }) {
           >
             Account
           </Link>
+          <Link
+            href="/trash"
+            onClick={() => setOpen(false)}
+            className="block px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+          >
+            Trash
+          </Link>
           <div className="border-t border-stone-100 mt-1 pt-1">
             <form action={logOut}>
               <button type="submit" className="w-full text-left px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50">

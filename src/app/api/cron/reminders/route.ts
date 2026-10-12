@@ -1,9 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { sendDigestEmail, sendLegacyAccessGrantedEmail, type DigestItem } from "@/lib/email";
 import { sendPushToUser } from "@/lib/push";
 import { logAudit } from "@/lib/audit";
 import { startOfTodayFor, addDays } from "@/lib/timezone";
+
+const TRASH_RETENTION_DAYS = 30;
+
+// Soft-deleted people/assets/accounts/tasks/documents older than the
+// retention window get actually removed - documents' blob files are
+// deleted here too, since the delete action deliberately keeps them around
+// until this point so a restore has something to restore.
+async function purgeOldSoftDeletes() {
+  const cutoff = new Date(Date.now() - TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+  const where = { deletedAt: { lt: cutoff } };
+
+  const documents = await prisma.document.findMany({ where, select: { id: true, fileUrl: true } });
+  for (const doc of documents) {
+    await del(doc.fileUrl).catch(() => {});
+  }
+
+  await Promise.all([
+    prisma.document.deleteMany({ where }),
+    prisma.task.deleteMany({ where }),
+    prisma.account.deleteMany({ where }),
+    prisma.asset.deleteMany({ where }),
+    prisma.person.deleteMany({ where }),
+  ]);
+}
 
 function dueLabel(dueDate: Date, today: Date) {
   const due = new Date(dueDate);
@@ -102,6 +127,7 @@ export async function GET(request: NextRequest) {
 
   await cleanupExpiredRows().catch((err) => console.error("Cron cleanup failed:", err));
   await grantDueLegacyAccess().catch((err) => console.error("Legacy access grant failed:", err));
+  await purgeOldSoftDeletes().catch((err) => console.error("Trash purge failed:", err));
 
   const appUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
@@ -117,11 +143,14 @@ export async function GET(request: NextRequest) {
       // below, not once per household - fetching everything OPEN avoids
       // a DB-side date filter that'd be wrong for whoever isn't in UTC.
       tasks: {
-        where: { status: "OPEN" },
+        // Nested relation fetches bypass the soft-delete query extension
+        // (it only intercepts top-level prisma.task.* calls), so deletedAt
+        // needs to be excluded explicitly here.
+        where: { status: "OPEN", deletedAt: null },
         select: { title: true, dueDate: true },
         orderBy: { dueDate: "asc" },
       },
-      documents: { where: { status: "PENDING_REVIEW" }, select: { id: true } },
+      documents: { where: { status: "PENDING_REVIEW", deletedAt: null }, select: { id: true } },
     },
   });
 
