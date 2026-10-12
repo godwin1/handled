@@ -2,10 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createPerson, deletePerson } from "@/lib/actions/people";
+import { createPerson } from "@/lib/actions/people";
 import { canEdit, canView } from "@/lib/permissions";
 import { Avatar } from "@/components/Avatar";
 import { EmptyState } from "@/components/EmptyState";
+import { RemovePersonButton } from "@/components/RemovePersonButton";
 import { Users } from "lucide-react";
 
 const RELATIONSHIPS = ["self", "partner", "child", "parent", "other"];
@@ -46,11 +47,7 @@ export default async function PeoplePage() {
                     <Link href={`/people/${person.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
                       Edit
                     </Link>
-                    <form action={deletePerson.bind(null, person.id)}>
-                      <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
-                        Remove
-                      </button>
-                    </form>
+                    <RemovePersonButton id={person.id} name={person.name} />
                   </div>
                 )}
               </div>

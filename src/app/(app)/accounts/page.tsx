@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createAccount, deleteAccount } from "@/lib/actions/accounts";
+import { createAccount } from "@/lib/actions/accounts";
 import { canEdit, canView } from "@/lib/permissions";
 import { monthlyTotalsByCurrency, formatMoney, formatMoneyTotals } from "@/lib/money";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { EmptyState } from "@/components/EmptyState";
+import { RemoveAccountButton } from "@/components/RemoveAccountButton";
 import { Wallet } from "lucide-react";
 
 const TYPES = ["utility", "internet", "insurance", "bank", "school", "medical", "other"];
@@ -80,11 +81,7 @@ export default async function AccountsPage() {
                     <Link href={`/accounts/${account.id}/edit`} className="text-xs text-stone-400 hover:text-stone-900">
                       Edit
                     </Link>
-                    <form action={deleteAccount.bind(null, account.id)}>
-                      <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
-                        Remove
-                      </button>
-                    </form>
+                    <RemoveAccountButton id={account.id} name={account.name} />
                   </div>
                 )}
               </div>

@@ -1,11 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteDocument } from "@/lib/actions/documents";
 import { revokeDocumentShareLink } from "@/lib/actions/documentShare";
 import { ConfirmDocumentForm } from "@/components/ConfirmDocumentForm";
 import { ShareDocumentForm } from "@/components/ShareDocumentForm";
 import { UploadNewVersionForm } from "@/components/UploadNewVersionForm";
+import { DeleteDocumentButton } from "@/components/DeleteDocumentButton";
 import { canEdit, canView } from "@/lib/permissions";
 import { getLimits } from "@/lib/billing";
 import { decryptField } from "@/lib/encryption";
@@ -48,13 +48,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
         <h1 className="font-display text-2xl font-medium text-stone-900">
           {document.status === "PENDING_REVIEW" ? "Review document" : document.title}
         </h1>
-        {editable && (
-          <form action={deleteDocument.bind(null, document.id)}>
-            <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
-              Delete
-            </button>
-          </form>
-        )}
+        {editable && <DeleteDocumentButton id={document.id} title={document.title} />}
       </div>
 
       {document.supersededBy && (
