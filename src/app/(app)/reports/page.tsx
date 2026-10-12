@@ -92,7 +92,7 @@ export default async function ReportsPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {seeAccounts && (
-          <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-4">
+          <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-4">
             <p className="text-xs text-stone-500">Monthly bills</p>
             <p className="text-lg font-display text-stone-900 mt-1">
               {Object.keys(monthlyTotals).length > 0 ? formatMoneyTotals(monthlyTotals, "") : "—"}
@@ -101,15 +101,15 @@ export default async function ReportsPage() {
         )}
         {seeTasks && (
           <>
-            <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-4">
+            <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-4">
               <p className="text-xs text-stone-500">Completed this month</p>
               <p className="text-lg font-display text-stone-900 mt-1">{tasksCompletedThisMonth}</p>
             </div>
-            <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-4">
+            <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-4">
               <p className="text-xs text-stone-500">Open tasks</p>
               <p className="text-lg font-display text-stone-900 mt-1">{openTaskCount}</p>
             </div>
-            <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-4">
+            <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-4">
               <p className="text-xs text-stone-500">Overdue</p>
               <p className={`text-lg font-display mt-1 ${overdueTaskCount > 0 ? "text-rust-600" : "text-stone-900"}`}>
                 {overdueTaskCount}
@@ -120,14 +120,14 @@ export default async function ReportsPage() {
       </div>
 
       {seeAccounts && spendByType.length > 0 && (
-        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
           <h2 className="text-sm font-medium text-stone-900 mb-4">Monthly spend by type</h2>
           <BarChart data={spendByType} orientation="horizontal" />
         </section>
       )}
 
       {seeTasks && (
-        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
           <h2 className="text-sm font-medium text-stone-900 mb-4">Tasks completed per month</h2>
           <BarChart
             data={monthLabels.map((label, i) => ({ label, value: tasksCompletedPerMonth[i], displayValue: String(tasksCompletedPerMonth[i]) }))}
@@ -136,7 +136,7 @@ export default async function ReportsPage() {
       )}
 
       {seeDocuments && (
-        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
           <h2 className="text-sm font-medium text-stone-900 mb-4">Documents added per month</h2>
           <BarChart
             data={monthLabels.map((label, i) => ({ label, value: documentsAddedPerMonth[i], displayValue: String(documentsAddedPerMonth[i]) }))}

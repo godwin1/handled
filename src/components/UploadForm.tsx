@@ -73,7 +73,7 @@ export function UploadForm({
               type="button"
               onClick={handleTakePhoto}
               disabled={capturing}
-              className="rounded-md border border-stone-300 text-xs font-medium px-2 py-1 hover:bg-stone-50 disabled:opacity-60"
+              className="rounded-full border border-stone-300 text-xs font-medium px-2.5 py-1 transition-all duration-150 hover:border-stone-400 hover:bg-stone-50 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 focus-visible:ring-offset-2 disabled:opacity-60"
             >
               {capturing ? "Opening camera…" : "Take photo"}
             </button>
@@ -117,11 +117,11 @@ export function UploadForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700 disabled:opacity-60"
+        className="rounded-full bg-accent-600 text-white text-sm font-medium px-5 py-1.5 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 disabled:opacity-60 disabled:active:scale-100 disabled:hover:shadow-sm"
       >
         {pending ? "Uploading…" : "Upload"}
       </button>
-      {state?.error && <p className="text-sm text-red-600 w-full">{state.error}</p>}
+      {state?.error && <p className="text-sm text-rust-600 w-full">{state.error}</p>}
     </form>
   );
 }

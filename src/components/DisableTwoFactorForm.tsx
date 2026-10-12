@@ -9,7 +9,7 @@ export function DisableTwoFactorForm() {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="text-xs text-stone-500 hover:text-red-600">
+      <button type="button" onClick={() => setOpen(true)} className="text-xs text-stone-500 hover:text-rust-600">
         Disable two-factor authentication
       </button>
     );
@@ -24,12 +24,12 @@ export function DisableTwoFactorForm() {
         required
         className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm"
       />
-      {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
+      {state?.error && <p className="text-xs text-rust-600">{state.error}</p>}
       <div className="flex items-center gap-3">
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-red-600 text-white text-xs font-medium px-3 py-1.5 hover:bg-red-700 disabled:opacity-60"
+          className="rounded-full bg-rust-600 text-white text-xs font-medium px-4 py-1.5 shadow-sm shadow-rust-600/25 transition-all duration-150 hover:bg-rust-700 hover:shadow-md hover:shadow-rust-600/30 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rust-600/50 focus-visible:ring-offset-2 disabled:opacity-60 disabled:active:scale-100 disabled:hover:shadow-sm"
         >
           {pending ? "Disabling…" : "Disable 2FA"}
         </button>

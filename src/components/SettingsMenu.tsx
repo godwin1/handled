@@ -29,7 +29,7 @@ export function SettingsMenu({ householdName }: { householdName: string }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-accent-600 transition-colors"
+        className="flex items-center gap-1.5 text-sm text-stone-500 hover:text-accent-600 hover:bg-accent-100 rounded-full px-2.5 py-1.5 -mx-2.5 -my-1.5 transition-colors"
       >
         <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
           <path

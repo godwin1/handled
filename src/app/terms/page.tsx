@@ -10,7 +10,7 @@ export default function TermsPage() {
           Handled
         </Link>
 
-        <div className="mt-8 bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6 sm:p-8 space-y-6 text-sm text-stone-700 leading-relaxed">
+        <div className="mt-8 bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6 sm:p-8 space-y-6 text-sm text-stone-700 leading-relaxed">
           <div>
             <h1 className="font-display text-2xl font-medium text-stone-900">Terms of Service</h1>
             <p className="text-xs text-stone-400 mt-1">Last updated October 4, 2026</p>

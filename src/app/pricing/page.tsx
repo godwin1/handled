@@ -22,7 +22,7 @@ export default function PricingPage() {
 
         <div className="mt-10 grid sm:grid-cols-3 gap-5">
           {(["free", "plus", "family"] as const).map((plan) => (
-            <div key={plan} className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6 space-y-4">
+            <div key={plan} className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6 space-y-4">
               <div>
                 <h2 className="text-sm font-medium text-stone-900">{PLAN_LABELS[plan]}</h2>
                 <p className="text-2xl font-display text-stone-900 mt-1">
@@ -44,7 +44,7 @@ export default function PricingPage() {
               </ul>
               <Link
                 href="/signup"
-                className="block text-center rounded-md bg-accent-600 text-white text-sm font-medium py-2 hover:bg-accent-700"
+                className="block text-center rounded-full bg-accent-600 text-white text-sm font-medium py-2 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2"
               >
                 Get started
               </Link>

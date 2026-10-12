@@ -38,7 +38,7 @@ export function CalendarSyncSection({ initialUrl }: { initialUrl: string }) {
           if (!window.confirm("This invalidates the old link — anywhere it's already subscribed will stop updating.")) return;
           startTransition(async () => setUrl(await regenerateCalendarUrl()));
         }}
-        className="text-xs text-stone-400 hover:text-red-600 disabled:opacity-60"
+        className="text-xs text-stone-400 hover:text-rust-600 disabled:opacity-60"
       >
         {pending ? "Regenerating…" : "Regenerate link"}
       </button>

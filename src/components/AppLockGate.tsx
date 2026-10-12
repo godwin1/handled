@@ -61,7 +61,7 @@ export function AppLockGate({ children }: { children: React.ReactNode }) {
                 const { requireBiometricUnlock } = await import("@/lib/appLock");
                 setLocked(!(await requireBiometricUnlock()));
               }}
-              className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-2 hover:bg-accent-700"
+              className="rounded-full bg-accent-600 text-white text-sm font-medium px-5 py-2 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2"
             >
               Unlock
             </button>

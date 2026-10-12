@@ -14,7 +14,7 @@ export function RemoveMemberButton({ userId, name }: { userId: string; name: str
         if (!window.confirm(`Remove ${name} from this household? They'll lose access immediately.`)) return;
         startTransition(() => removeMember(userId));
       }}
-      className="text-xs text-stone-400 hover:text-red-600 disabled:opacity-40"
+      className="text-xs text-stone-400 hover:text-rust-600 disabled:opacity-40"
     >
       {pending ? "Removing…" : "Remove"}
     </button>

@@ -22,13 +22,13 @@ export function ShareDocumentForm({ documentId }: { documentId: string }) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700 disabled:opacity-60"
+          className="rounded-full bg-accent-600 text-white text-sm font-medium px-5 py-1.5 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 disabled:opacity-60 disabled:active:scale-100 disabled:hover:shadow-sm"
         >
           {pending ? "Creating…" : "Create share link"}
         </button>
       </form>
 
-      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state?.error && <p className="text-sm text-rust-600">{state.error}</p>}
 
       {state?.link && (
         <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-md px-3 py-2">

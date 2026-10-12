@@ -57,7 +57,7 @@ export function UploadNewVersionForm({ documentId }: { documentId: string }) {
               type="button"
               onClick={handleTakePhoto}
               disabled={capturing}
-              className="rounded-md border border-stone-300 text-xs font-medium px-2 py-1 hover:bg-stone-50 disabled:opacity-60"
+              className="rounded-full border border-stone-300 text-xs font-medium px-2.5 py-1 transition-all duration-150 hover:border-stone-400 hover:bg-stone-50 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 focus-visible:ring-offset-2 disabled:opacity-60"
             >
               {capturing ? "Opening camera…" : "Take photo"}
             </button>
@@ -68,11 +68,11 @@ export function UploadNewVersionForm({ documentId }: { documentId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md border border-stone-300 text-sm font-medium px-4 py-1.5 hover:bg-stone-50 disabled:opacity-60"
+        className="rounded-full border border-stone-300 text-sm font-medium px-4 py-1.5 transition-all duration-150 hover:border-stone-400 hover:bg-stone-50 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-300 focus-visible:ring-offset-2 disabled:opacity-60 disabled:active:scale-100"
       >
         {pending ? "Uploading…" : "Replace with new version"}
       </button>
-      {state?.error && <p className="text-sm text-red-600 w-full">{state.error}</p>}
+      {state?.error && <p className="text-sm text-rust-600 w-full">{state.error}</p>}
     </form>
   );
 }

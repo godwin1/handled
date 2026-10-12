@@ -49,7 +49,7 @@ export default async function AuditLogPage() {
     <div className="space-y-6">
       <HouseholdPageHeader householdName={user.household.name} isAdmin={user.isAdmin} />
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         {entries.length === 0 ? (
           <p className="text-sm text-stone-400">No activity yet.</p>
         ) : (

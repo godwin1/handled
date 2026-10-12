@@ -50,7 +50,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
         </h1>
         {editable && (
           <form action={deleteDocument.bind(null, document.id)}>
-            <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+            <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
               Delete
             </button>
           </form>
@@ -68,7 +68,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       )}
 
       {isImage ? (
-        <div className="relative w-full max-h-80 overflow-hidden rounded-2xl border border-stone-200/70 shadow-sm bg-stone-100">
+        <div className="relative w-full max-h-80 overflow-hidden rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] bg-stone-100">
           {/* Plain <img>, not next/image: the file lives behind an authenticated
               route, and the browser's own cookie-bearing request is what makes
               that work — Next's server-side image optimizer would fetch it
@@ -85,13 +85,13 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       {editable ? (
         <ConfirmDocumentForm document={document} people={people} assets={assets} accounts={accounts} />
       ) : (
-        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 text-sm text-stone-500">
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 text-sm text-stone-500">
           You have view-only access to documents.
         </div>
       )}
 
       {editable && (
-        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-4">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 space-y-4">
           <div>
             <h2 className="text-sm font-medium text-stone-900">Share outside your household</h2>
             <p className="text-xs text-stone-500 mt-0.5">
@@ -115,7 +115,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
                 <div key={link.id} className="flex items-center justify-between text-xs text-stone-500">
                   <span>Expires {link.expiresAt!.toLocaleDateString()}</span>
                   <form action={revokeDocumentShareLink.bind(null, document.id, link.id)}>
-                    <button type="submit" className="text-stone-400 hover:text-red-600">
+                    <button type="submit" className="text-stone-400 hover:text-rust-600">
                       Revoke
                     </button>
                   </form>
@@ -127,7 +127,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
       )}
 
       {editable && !document.supersededBy && (
-        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-3">
+        <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5 space-y-3">
           <div>
             <h2 className="text-sm font-medium text-stone-900">Version history</h2>
             <p className="text-xs text-stone-500 mt-0.5">

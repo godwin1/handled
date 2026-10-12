@@ -23,7 +23,7 @@ export default async function HouseholdPage() {
     <div className="space-y-6">
       <HouseholdPageHeader householdName={user.household.name} isAdmin={user.isAdmin} />
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Members</h2>
         <div className="divide-y divide-stone-100">
           {members.map((m) => {
@@ -94,7 +94,7 @@ export default async function HouseholdPage() {
           </div>
           <a
             href="/api/export"
-            className="shrink-0 text-xs font-medium text-stone-600 hover:text-accent-600 rounded-md border border-stone-300 px-3 py-1.5 bg-white"
+            className="shrink-0 text-xs font-medium text-stone-600 hover:text-accent-600 rounded-full border border-stone-300 px-3 py-1.5 bg-white transition-all duration-150 hover:border-accent-300 hover:shadow-sm active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2"
           >
             Download
           </a>

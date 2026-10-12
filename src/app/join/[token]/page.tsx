@@ -22,7 +22,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
           <p className="mt-2 text-sm text-stone-500">Nothing important slips.</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6">
           {invalid ? (
             <>
               <h2 className="text-lg font-medium text-stone-900 mb-2">Invite not valid</h2>

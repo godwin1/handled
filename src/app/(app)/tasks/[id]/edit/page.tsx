@@ -39,7 +39,7 @@ export default async function EditTaskPage({ params }: { params: Promise<{ id: s
         </Link>
       </div>
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         <h1 className="text-lg font-medium text-stone-900 mb-4">Edit task</h1>
         <form action={updateTask.bind(null, task.id)} className="space-y-4">
           <div>
@@ -118,7 +118,7 @@ export default async function EditTaskPage({ params }: { params: Promise<{ id: s
               </select>
             </div>
           </div>
-          <button type="submit" className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700">
+          <button type="submit" className="rounded-full bg-accent-600 text-white text-sm font-medium px-5 py-1.5 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2">
             Save changes
           </button>
         </form>

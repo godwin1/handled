@@ -48,8 +48,10 @@ export function TaskRow({
           <button
             type="submit"
             aria-label={done ? "Mark as not done" : "Mark as done"}
-            className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 ${
-              done ? "bg-sage-600 border-sage-600 text-white" : "border-stone-300 hover:border-accent-400"
+            className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition-all duration-150 active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-1 ${
+              done
+                ? "bg-sage-600 border-sage-600 text-white hover:bg-sage-700 hover:border-sage-700"
+                : "border-stone-300 hover:border-accent-500 hover:bg-accent-100"
             }`}
           >
             {done && (

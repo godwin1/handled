@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(logIn, undefined);
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6">
+    <div className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6">
       <h2 className="text-lg font-medium text-stone-900 mb-4">Log in</h2>
       <form action={formAction} className="space-y-4">
         <TimezoneField />
@@ -36,11 +36,11 @@ export default function LoginPage() {
             className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent-400/50"
           />
         </div>
-        {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+        {state?.error && <p className="text-sm text-rust-600">{state.error}</p>}
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-md bg-accent-600 text-white text-sm font-medium py-2 hover:bg-accent-700 disabled:opacity-60"
+          className="w-full rounded-full bg-accent-600 text-white text-sm font-medium py-2 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 disabled:opacity-60 disabled:active:scale-100 disabled:hover:shadow-sm"
         >
           {pending ? "Logging in…" : "Log in"}
         </button>

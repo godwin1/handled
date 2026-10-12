@@ -31,13 +31,13 @@ export default async function DocumentsPage() {
       <h1 className="font-display text-2xl font-medium text-stone-900">Documents</h1>
 
       {editable && (
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         <h2 className="text-sm font-medium text-stone-900 mb-3">Upload a document</h2>
         <UploadForm people={people} assets={assets} accounts={accounts} />
       </section>
       )}
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-5">
         {documents.length === 0 ? (
           <p className="text-sm text-stone-400">No documents yet.</p>
         ) : (

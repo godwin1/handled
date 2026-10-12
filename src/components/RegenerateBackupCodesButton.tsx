@@ -43,7 +43,7 @@ export function RegenerateBackupCodesButton() {
       >
         {pending ? "Generating…" : "Generate new backup codes"}
       </button>
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-xs text-rust-600 mt-1">{error}</p>}
     </div>
   );
 }

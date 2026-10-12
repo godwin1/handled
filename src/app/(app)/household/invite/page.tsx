@@ -35,7 +35,7 @@ export default async function InviteHouseholdPage() {
                   <p className="text-xs text-stone-500">Expires {invite.expiresAt.toLocaleDateString()}</p>
                 </div>
                 <form action={revokeInvite.bind(null, invite.id)}>
-                  <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                  <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
                     Revoke
                   </button>
                 </form>

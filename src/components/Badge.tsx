@@ -17,7 +17,9 @@ const COLORS: Record<string, string> = {
 export function Badge({ label }: { label: string }) {
   const color = COLORS[label] ?? COLORS.other;
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${color}`}>
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ring-1 ring-inset ring-black/5 ${color}`}
+    >
       {label}
     </span>
   );

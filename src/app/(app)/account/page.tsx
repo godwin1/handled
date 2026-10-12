@@ -48,7 +48,7 @@ export default async function AccountPage() {
           <form action={startEnrollment}>
             <button
               type="submit"
-              className="rounded-md bg-accent-600 text-white text-sm font-medium px-4 py-1.5 hover:bg-accent-700"
+              className="rounded-full bg-accent-600 text-white text-sm font-medium px-5 py-1.5 shadow-sm shadow-accent-600/25 transition-all duration-150 hover:bg-accent-700 hover:shadow-md hover:shadow-accent-600/30 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2"
             >
               Enable two-factor authentication
             </button>
@@ -74,7 +74,7 @@ export default async function AccountPage() {
           <h2 className="text-sm font-medium text-stone-900">Active sessions</h2>
           {sessions.length > 1 && (
             <form action={revokeAllOtherSessions}>
-              <button type="submit" className="text-xs text-stone-500 hover:text-red-600">
+              <button type="submit" className="text-xs text-stone-500 hover:text-rust-600">
                 Log out all other sessions
               </button>
             </form>
@@ -96,7 +96,7 @@ export default async function AccountPage() {
                 </div>
                 {!isCurrent && (
                   <form action={revokeSession.bind(null, s.id)}>
-                    <button type="submit" className="text-xs text-stone-400 hover:text-red-600">
+                    <button type="submit" className="text-xs text-stone-400 hover:text-rust-600">
                       Log out
                     </button>
                   </form>
