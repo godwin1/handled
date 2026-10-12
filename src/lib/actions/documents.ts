@@ -243,4 +243,9 @@ export async function deleteDocument(id: string) {
   });
 
   revalidatePath("/documents");
+  // The form that calls this lives on the document's own detail page -
+  // without a redirect, Next.js refreshes that same route's server
+  // component after the action resolves, re-running its lookup for a
+  // document that no longer exists and 404ing instead of navigating away.
+  redirect("/documents");
 }
