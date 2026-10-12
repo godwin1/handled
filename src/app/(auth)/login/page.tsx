@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { logIn } from "@/lib/actions/auth";
+import { TimezoneField } from "@/components/TimezoneField";
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(logIn, undefined);
@@ -11,6 +12,7 @@ export default function LoginPage() {
     <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-6">
       <h2 className="text-lg font-medium text-stone-900 mb-4">Log in</h2>
       <form action={formAction} className="space-y-4">
+        <TimezoneField />
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
           <input

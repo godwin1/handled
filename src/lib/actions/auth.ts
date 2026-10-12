@@ -7,6 +7,7 @@ import { createSession, destroySession, hashPassword, verifyPassword, createPend
 import { sendPasswordResetEmail, sendLoginAlertEmail } from "@/lib/email";
 import { currentOrigin } from "@/lib/url";
 import { getClientIp, isRateLimited, recordAttempt } from "@/lib/rateLimit";
+import { isValidTimezone } from "@/lib/timezone";
 
 const RESET_TOKEN_HOURS = 1;
 
@@ -15,6 +16,8 @@ export async function signUp(_prevState: { error?: string } | undefined, formDat
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
   const householdName = String(formData.get("householdName") || "").trim();
+  const timezoneRaw = String(formData.get("timezone") || "");
+  const timezone = isValidTimezone(timezoneRaw) ? timezoneRaw : null;
 
   const ip = await getClientIp();
   if (await isRateLimited(`signup:${ip}`, 5, 60)) {
@@ -38,6 +41,7 @@ export async function signUp(_prevState: { error?: string } | undefined, formDat
       name,
       email,
       passwordHash,
+      timezone,
       isAdmin: true, // household creator starts as its admin
       household: {
         create: { name: householdName || `${name}'s household` },
@@ -52,6 +56,8 @@ export async function signUp(_prevState: { error?: string } | undefined, formDat
 export async function logIn(_prevState: { error?: string } | undefined, formData: FormData) {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
+  const timezoneRaw = String(formData.get("timezone") || "");
+  const timezone = isValidTimezone(timezoneRaw) ? timezoneRaw : null;
 
   const ip = await getClientIp();
   const rateLimitKey = `login:${ip}:${email}`;
@@ -69,6 +75,12 @@ export async function logIn(_prevState: { error?: string } | undefined, formData
   if (!valid) {
     await recordAttempt(rateLimitKey);
     return { error: "Invalid email or password." };
+  }
+
+  // Keeps it current if the person travels or switches devices - cheap
+  // enough to do on every login rather than only once at signup.
+  if (timezone && timezone !== user.timezone) {
+    await prisma.user.update({ where: { id: user.id }, data: { timezone } });
   }
 
   if (user.totpEnabled) {

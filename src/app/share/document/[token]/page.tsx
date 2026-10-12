@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { decryptField } from "@/lib/encryption";
 
 export default async function SharedDocumentPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -44,7 +45,7 @@ export default async function SharedDocumentPage({ params }: { params: Promise<{
                 )}
                 {link.document.dueDate && <p>Due: {link.document.dueDate.toLocaleDateString()}</p>}
                 {link.document.expiryDate && <p>Expires: {link.document.expiryDate.toLocaleDateString()}</p>}
-                {link.document.policyNumber && <p>Reference: {link.document.policyNumber}</p>}
+                {link.document.policyNumber && <p>Reference: {decryptField(link.document.policyNumber)}</p>}
               </div>
 
               {link.document.mimeType.startsWith("image/") ? (

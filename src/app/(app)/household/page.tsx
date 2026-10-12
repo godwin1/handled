@@ -83,6 +83,23 @@ export default async function HouseholdPage() {
           })}
         </div>
       </section>
+
+      {user.isAdmin && (
+        <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-medium text-stone-900">Export your data</h2>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Download everything — people, assets, accounts, tasks, and documents (including the files) — as a zip.
+            </p>
+          </div>
+          <a
+            href="/api/export"
+            className="shrink-0 text-xs font-medium text-stone-600 hover:text-accent-600 rounded-md border border-stone-300 px-3 py-1.5 bg-white"
+          >
+            Download
+          </a>
+        </section>
+      )}
     </div>
   );
 }

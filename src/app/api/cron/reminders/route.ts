@@ -3,22 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { sendDigestEmail, sendLegacyAccessGrantedEmail, type DigestItem } from "@/lib/email";
 import { sendPushToUser } from "@/lib/push";
 import { logAudit } from "@/lib/audit";
-
-function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
+import { startOfTodayFor, addDays } from "@/lib/timezone";
 
 function dueLabel(dueDate: Date, today: Date) {
   const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
+  due.setUTCHours(0, 0, 0, 0);
   const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return "due today";
@@ -114,8 +103,6 @@ export async function GET(request: NextRequest) {
   await cleanupExpiredRows().catch((err) => console.error("Cron cleanup failed:", err));
   await grantDueLegacyAccess().catch((err) => console.error("Legacy access grant failed:", err));
 
-  const today = startOfToday();
-  const weekEnd = addDays(today, 7);
   const appUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : "http://localhost:3000";
@@ -124,9 +111,13 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       name: true,
-      members: { select: { id: true, email: true, name: true } },
+      members: { select: { id: true, email: true, name: true, timezone: true } },
+      // Open-ended on purpose: household members can be in different
+      // timezones, so "overdue"/"due this week" is computed per member
+      // below, not once per household - fetching everything OPEN avoids
+      // a DB-side date filter that'd be wrong for whoever isn't in UTC.
       tasks: {
-        where: { status: "OPEN", dueDate: { lt: weekEnd } },
+        where: { status: "OPEN" },
         select: { title: true, dueDate: true },
         orderBy: { dueDate: "asc" },
       },
@@ -139,22 +130,26 @@ export async function GET(request: NextRequest) {
   const failures: string[] = [];
 
   for (const household of households) {
-    const overdueItems: DigestItem[] = [];
-    const dueThisWeekItems: DigestItem[] = [];
-
-    for (const task of household.tasks) {
-      const item: DigestItem = { title: task.title, dueLabel: dueLabel(task.dueDate, today), overdue: task.dueDate < today };
-      (item.overdue ? overdueItems : dueThisWeekItems).push(item);
-    }
-
     const pendingDocuments = household.documents.length;
-    if (overdueItems.length === 0 && dueThisWeekItems.length === 0 && pendingDocuments === 0) {
-      continue;
-    }
-
-    const totalCount = overdueItems.length + dueThisWeekItems.length;
 
     for (const member of household.members) {
+      const today = startOfTodayFor(member.timezone);
+      const weekEnd = addDays(today, 7);
+
+      const overdueItems: DigestItem[] = [];
+      const dueThisWeekItems: DigestItem[] = [];
+      for (const task of household.tasks) {
+        if (task.dueDate >= weekEnd) continue;
+        const item: DigestItem = { title: task.title, dueLabel: dueLabel(task.dueDate, today), overdue: task.dueDate < today };
+        (item.overdue ? overdueItems : dueThisWeekItems).push(item);
+      }
+
+      if (overdueItems.length === 0 && dueThisWeekItems.length === 0 && pendingDocuments === 0) {
+        continue;
+      }
+
+      const totalCount = overdueItems.length + dueThisWeekItems.length;
+
       const result = await sendDigestEmail({
         to: member.email,
         recipientName: member.name,

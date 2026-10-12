@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
 import { canView } from "@/lib/permissions";
+import { decryptField } from "@/lib/encryption";
 
 export default async function SearchPage({
   searchParams,
@@ -40,7 +41,7 @@ export default async function SearchPage({
         .filter((a) => matches(a.name, a.provider, a.type))
         .map((a) => ({ kind: "Account", href: "/accounts", title: a.name, subtitle: a.provider ?? a.type })),
       ...documents
-        .filter((d) => matches(d.title, d.merchant, d.type, d.policyNumber, d.extractedText))
+        .filter((d) => matches(d.title, d.merchant, d.type, decryptField(d.policyNumber), d.extractedText))
         .map((d) => ({ kind: "Document", href: `/documents/${d.id}`, title: d.title, subtitle: d.type })),
       ...tasks
         .filter((t) => matches(t.title, t.type))

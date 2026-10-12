@@ -4,23 +4,12 @@ import { requireUser } from "@/lib/auth";
 import { TaskRow } from "@/components/TaskRow";
 import { Greeting } from "@/components/Greeting";
 import { canEdit, canView } from "@/lib/permissions";
-import { monthlyEquivalent, formatMoney } from "@/lib/money";
-
-function startOfToday() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-function addDays(date: Date, days: number) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
+import { monthlyTotalsByCurrency, formatMoneyTotals } from "@/lib/money";
+import { startOfTodayFor, addDays } from "@/lib/timezone";
 
 export default async function DashboardPage() {
   const user = await requireUser();
-  const today = startOfToday();
+  const today = startOfTodayFor(user.timezone);
   const weekEnd = addDays(today, 7);
   const monthEnd = addDays(today, 30);
 
@@ -71,12 +60,12 @@ export default async function DashboardPage() {
       seeAccounts
         ? prisma.account.findMany({
             where: { householdId: user.householdId, amount: { not: null } },
-            select: { amount: true, billingCycle: true },
+            select: { amount: true, billingCycle: true, currency: true },
           })
         : [],
     ]);
 
-  const monthlyBillsTotal = billableAccounts.reduce((sum, a) => sum + monthlyEquivalent(a), 0);
+  const monthlyTotals = monthlyTotalsByCurrency(billableAccounts);
   const dueThisWeekCount = overdueTasks.length + thisWeekTasks.length;
   const firstName = user.name.split(" ")[0];
 
@@ -133,10 +122,10 @@ export default async function DashboardPage() {
             ) : (
               <div>
                 {overdueTasks.map((task) => (
-                  <TaskRow key={task.id} task={task} editable={tasksEditable} />
+                  <TaskRow key={task.id} task={task} editable={tasksEditable} timezone={user.timezone} />
                 ))}
                 {thisWeekTasks.map((task) => (
-                  <TaskRow key={task.id} task={task} editable={tasksEditable} />
+                  <TaskRow key={task.id} task={task} editable={tasksEditable} timezone={user.timezone} />
                 ))}
               </div>
             )}
@@ -149,7 +138,7 @@ export default async function DashboardPage() {
             ) : (
               <div>
                 {next30Tasks.map((task) => (
-                  <TaskRow key={task.id} task={task} editable={tasksEditable} />
+                  <TaskRow key={task.id} task={task} editable={tasksEditable} timezone={user.timezone} />
                 ))}
               </div>
             )}
@@ -166,11 +155,11 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      {seeAccounts && monthlyBillsTotal > 0 && (
+      {seeAccounts && Object.keys(monthlyTotals).length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 flex items-center justify-between">
           <h2 className="text-sm font-medium text-stone-900">Monthly bills</h2>
           <Link href="/accounts" className="text-sm text-stone-500 hover:text-accent-600">
-            {formatMoney(monthlyBillsTotal)}/month (est.)
+            {formatMoneyTotals(monthlyTotals, "/month (est.)")}
           </Link>
         </section>
       )}

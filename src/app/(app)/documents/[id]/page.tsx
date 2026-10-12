@@ -8,6 +8,7 @@ import { ShareDocumentForm } from "@/components/ShareDocumentForm";
 import { UploadNewVersionForm } from "@/components/UploadNewVersionForm";
 import { canEdit, canView } from "@/lib/permissions";
 import { getLimits } from "@/lib/billing";
+import { decryptField } from "@/lib/encryption";
 import Link from "next/link";
 
 export default async function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -16,14 +17,15 @@ export default async function DocumentDetailPage({ params }: { params: Promise<{
   if (!canView(user, "documents")) redirect("/dashboard");
   const editable = canEdit(user, "documents");
 
-  const document = await prisma.document.findFirst({
+  const documentRow = await prisma.document.findFirst({
     where: { id, householdId: user.householdId },
     include: {
       supersedes: { select: { id: true, title: true, createdAt: true } },
       supersededBy: { select: { id: true, title: true, createdAt: true } },
     },
   });
-  if (!document) notFound();
+  if (!documentRow) notFound();
+  const document = { ...documentRow, policyNumber: decryptField(documentRow.policyNumber) };
 
   const [people, assets, accounts, shareLinks] = await Promise.all([
     prisma.person.findMany({ where: { householdId: user.householdId }, select: { id: true, name: true } }),

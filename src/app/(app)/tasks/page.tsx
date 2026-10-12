@@ -54,7 +54,7 @@ export default async function TasksPage() {
         ) : (
           <div>
             {openTasks.map((task) => (
-              <TaskRow key={task.id} task={task} editable={editable} />
+              <TaskRow key={task.id} task={task} editable={editable} timezone={user.timezone} />
             ))}
           </div>
         )}
@@ -148,7 +148,7 @@ export default async function TasksPage() {
           <h2 className="text-sm font-medium text-stone-900 mb-1">Recently done</h2>
           <div>
             {doneTasks.map((task) => (
-              <TaskRow key={task.id} task={task} editable={editable} />
+              <TaskRow key={task.id} task={task} editable={editable} timezone={user.timezone} />
             ))}
           </div>
         </section>

@@ -10,6 +10,7 @@ import { extractDocument } from "@/lib/extraction";
 import { canEdit, requireEdit } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import { canAddDocument, getLimits, hasAiExtractionQuota } from "@/lib/billing";
+import { encryptField } from "@/lib/encryption";
 
 async function createDocumentFromUpload(params: {
   householdId: string;
@@ -46,7 +47,7 @@ async function createDocumentFromUpload(params: {
       currency: extraction.currency ?? null,
       dueDate: extraction.dueDate ?? null,
       expiryDate: extraction.expiryDate ?? null,
-      policyNumber: extraction.policyNumber ?? null,
+      policyNumber: encryptField(extraction.policyNumber ?? null),
       extractedText: extraction.extractedText ?? null,
       suggestedTaskTitle: extraction.suggestedTaskTitle,
       suggestedTaskType: extraction.suggestedTaskType,
@@ -184,7 +185,7 @@ export async function confirmDocument(
       currency: currency || null,
       dueDate: dueDateRaw ? new Date(dueDateRaw) : null,
       expiryDate: expiryDateRaw ? new Date(expiryDateRaw) : null,
-      policyNumber: policyNumber || null,
+      policyNumber: encryptField(policyNumber || null),
       personId,
       assetId,
       accountId,

@@ -15,6 +15,7 @@ const NAV: { href: string; label: string; category?: Category }[] = [
   { href: "/people", label: "People", category: "people" },
   { href: "/assets", label: "Assets", category: "assets" },
   { href: "/accounts", label: "Accounts", category: "accounts" },
+  { href: "/reports", label: "Insights" },
   { href: "/search", label: "Search" },
 ];
 

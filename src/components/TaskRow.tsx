@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { toggleTaskStatus } from "@/lib/actions/tasks";
+import { startOfTodayFor } from "@/lib/timezone";
 
 type TaskWithRelations = {
   id: string;
@@ -15,11 +16,10 @@ type TaskWithRelations = {
   account: { name: string } | null;
 };
 
-function formatDue(date: Date) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+function formatDue(date: Date, timezone: string | null | undefined) {
+  const today = startOfTodayFor(timezone);
   const due = new Date(date);
-  due.setHours(0, 0, 0, 0);
+  due.setUTCHours(0, 0, 0, 0);
   const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) return { label: "Today", overdue: false };
@@ -28,9 +28,17 @@ function formatDue(date: Date) {
   return { label: `in ${diffDays}d`, overdue: false };
 }
 
-export function TaskRow({ task, editable = true }: { task: TaskWithRelations; editable?: boolean }) {
+export function TaskRow({
+  task,
+  editable = true,
+  timezone,
+}: {
+  task: TaskWithRelations;
+  editable?: boolean;
+  timezone?: string | null;
+}) {
   const related = task.person?.name || task.asset?.name || task.account?.name;
-  const due = formatDue(task.dueDate);
+  const due = formatDue(task.dueDate, timezone);
   const done = task.status === "DONE";
 
   return (

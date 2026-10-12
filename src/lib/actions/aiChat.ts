@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
 import { canView } from "@/lib/permissions";
 import { hasAiChatQuota, getLimits } from "@/lib/billing";
+import { decryptField } from "@/lib/encryption";
 
 const CHAT_MODEL = process.env.ANTHROPIC_CHAT_MODEL || "claude-opus-5";
 
@@ -70,7 +71,7 @@ export async function askHouseholdQuestion(question: string): Promise<{ answer?:
       currency: d.currency,
       dueDate: d.dueDate,
       expiryDate: d.expiryDate,
-      policyNumber: d.policyNumber,
+      policyNumber: decryptField(d.policyNumber),
       excerpt: d.extractedText?.slice(0, EXCERPT_LENGTH),
     })),
   };

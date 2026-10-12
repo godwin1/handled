@@ -68,6 +68,12 @@ model User {
   name         String
   createdAt    DateTime @default(now())
 
+  // IANA timezone (e.g. "America/Los_Angeles"), captured from the browser
+  // at signup/login - see src/lib/timezone.ts for why this matters for
+  // "today"/"overdue" math. Null until the first login that carries it
+  // (pre-existing users, or anyone who signed up before this existed).
+  timezone String?
+
   // Household creator starts as admin. Admins manage member admin status
   // and per-category permissions, and are the only ones who can see the
   // audit log. Always implies full view+edit on every category, regardless

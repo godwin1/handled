@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAccount, deleteAccount } from "@/lib/actions/accounts";
 import { canEdit, canView } from "@/lib/permissions";
-import { monthlyEquivalent, formatMoney } from "@/lib/money";
+import { monthlyTotalsByCurrency, formatMoney, formatMoneyTotals } from "@/lib/money";
 
 const TYPES = ["utility", "internet", "insurance", "bank", "school", "medical", "other"];
 const BILLING_CYCLES = [
@@ -36,17 +36,18 @@ export default async function AccountsPage() {
     prisma.asset.findMany({ where: { householdId: user.householdId }, select: { id: true, name: true } }),
   ]);
 
-  const monthlyTotal = accounts.reduce((sum, a) => sum + monthlyEquivalent(a), 0);
+  const monthlyTotals = monthlyTotalsByCurrency(accounts);
+  const yearlyTotals = Object.fromEntries(Object.entries(monthlyTotals).map(([currency, amount]) => [currency, amount * 12]));
 
   return (
     <div className="space-y-8">
       <h1 className="font-display text-2xl font-medium text-stone-900">Accounts</h1>
 
-      {monthlyTotal > 0 && (
+      {Object.keys(monthlyTotals).length > 0 && (
         <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 flex items-center justify-between">
           <h2 className="text-sm font-medium text-stone-900">Recurring bills</h2>
           <p className="text-sm text-stone-500">
-            {formatMoney(monthlyTotal)}/month · {formatMoney(monthlyTotal * 12)}/year (est.)
+            {formatMoneyTotals(monthlyTotals, "/month")} · {formatMoneyTotals(yearlyTotals, "/year (est.)")}
           </p>
         </section>
       )}
