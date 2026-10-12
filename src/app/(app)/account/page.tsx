@@ -29,7 +29,7 @@ export default async function AccountPage() {
         </p>
       </div>
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-4">
+      <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-4">
         <div>
           <h2 className="text-sm font-medium text-stone-900">Two-factor authentication</h2>
           <p className="text-xs text-stone-500 mt-0.5">
@@ -56,7 +56,7 @@ export default async function AccountPage() {
         )}
       </section>
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-2">
+      <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-2">
         <h2 className="text-sm font-medium text-stone-900">Push notifications</h2>
         <p className="text-xs text-stone-500">
           {pushTokenCount === 0
@@ -64,12 +64,12 @@ export default async function AccountPage() {
             : `${pushTokenCount} device${pushTokenCount === 1 ? "" : "s"} registered.`}
         </p>
         <SendTestPushButton />
-        <div className="border-t border-stone-100 pt-3">
+        <div className="border-t border-stone-200/70 pt-3">
           <AppLockToggle />
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
+      <section className="bg-stone-50 border border-stone-200 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-medium text-stone-900">Active sessions</h2>
           {sessions.length > 1 && (
@@ -80,7 +80,7 @@ export default async function AccountPage() {
             </form>
           )}
         </div>
-        <div className="divide-y divide-stone-100">
+        <div className="divide-y divide-stone-200/70">
           {sessions.map((s) => {
             const isCurrent = s.id === currentSessionId;
             return (

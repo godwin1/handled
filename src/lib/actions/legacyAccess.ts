@@ -38,7 +38,7 @@ export async function createLegacyAccessLink(
     entityLabel: `emergency access link for ${contactName}`,
   });
 
-  revalidatePath("/household");
+  revalidatePath("/household/emergency-access");
 
   const origin = await currentOrigin();
   return { link: `${origin}/legacy-access/${link.token}` };
@@ -62,7 +62,7 @@ export async function revokeLegacyAccessLink(linkId: string) {
     entityLabel: `emergency access link for ${link.contactName}`,
   });
 
-  revalidatePath("/household");
+  revalidatePath("/household/emergency-access");
 }
 
 export async function setLegacyAccessWaitDays(formData: FormData) {
@@ -73,7 +73,7 @@ export async function setLegacyAccessWaitDays(formData: FormData) {
   const waitDays = Math.min(MAX_WAIT_DAYS, Math.max(MIN_WAIT_DAYS, Number.isFinite(raw) ? Math.round(raw) : MIN_WAIT_DAYS));
 
   await prisma.household.update({ where: { id: user.householdId }, data: { legacyAccessMinWaitDays: waitDays } });
-  revalidatePath("/household");
+  revalidatePath("/household/emergency-access");
 }
 
 // Public - called by whoever holds the link, who isn't a household member

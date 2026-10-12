@@ -53,7 +53,7 @@ export async function createInvite(
     entityLabel: email ?? "open invite",
   });
 
-  revalidatePath("/household");
+  revalidatePath("/household/invite");
 
   let emailSent: boolean | undefined;
   if (email) {
@@ -89,7 +89,7 @@ export async function revokeInvite(id: string) {
     entityLabel: invite.email ?? "open invite",
   });
 
-  revalidatePath("/household");
+  revalidatePath("/household/invite");
 }
 
 export async function acceptInvite(

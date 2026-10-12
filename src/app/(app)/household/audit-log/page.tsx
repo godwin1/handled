@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/Badge";
+import { HouseholdPageHeader } from "@/components/HouseholdPageHeader";
 import { getLimits } from "@/lib/billing";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -27,12 +28,8 @@ export default async function AuditLogPage() {
   if (!getLimits(user.household).auditLog) {
     return (
       <div className="space-y-6">
-        <div>
-          <Link href="/household" className="text-sm text-stone-500 hover:text-stone-900">
-            ← Back to household
-          </Link>
-        </div>
-        <div className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 text-sm text-stone-600">
+        <HouseholdPageHeader householdName={user.household.name} isAdmin={user.isAdmin} />
+        <div className="bg-stone-50 border border-stone-200 rounded-xl p-5 text-sm text-stone-600">
           The activity log needs a Family plan.{" "}
           <Link href="/billing" className="text-accent-600 underline hover:text-accent-700">
             Upgrade
@@ -50,16 +47,7 @@ export default async function AuditLogPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/household" className="text-sm text-stone-500 hover:text-stone-900">
-          ← Back to household
-        </Link>
-      </div>
-
-      <div>
-        <h1 className="font-display text-2xl font-medium text-stone-900">Activity log</h1>
-        <p className="text-sm text-stone-500 mt-1">Every change made across your household, newest first.</p>
-      </div>
+      <HouseholdPageHeader householdName={user.household.name} isAdmin={user.isAdmin} />
 
       <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5">
         {entries.length === 0 ? (

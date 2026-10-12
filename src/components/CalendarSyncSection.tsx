@@ -9,7 +9,7 @@ export function CalendarSyncSection({ initialUrl }: { initialUrl: string }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <section className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-3">
+    <section className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-3">
       <div>
         <h2 className="text-sm font-medium text-stone-900">Calendar sync</h2>
         <p className="text-xs text-stone-500 mt-0.5">
@@ -17,7 +17,7 @@ export function CalendarSyncSection({ initialUrl }: { initialUrl: string }) {
           alongside the rest of your calendar. Updates automatically — no need to re-subscribe.
         </p>
       </div>
-      <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-md px-3 py-2">
+      <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-md px-3 py-2">
         <input readOnly value={url} className="flex-1 bg-transparent text-sm text-stone-700 outline-none" />
         <button
           type="button"

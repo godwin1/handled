@@ -26,6 +26,6 @@ export async function regenerateCalendarUrl(): Promise<string> {
   const token = crypto.randomUUID();
   await prisma.household.update({ where: { id: user.householdId }, data: { calendarToken: token } });
 
-  revalidatePath("/household");
+  revalidatePath("/household/calendar");
   return `${origin}/api/calendar/${token}/feed.ics`;
 }

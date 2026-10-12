@@ -80,7 +80,7 @@ export default async function BillingPage({
           {(["plus", "family"] as const)
             .filter((plan) => plan !== effectivePlan)
             .map((plan) => (
-              <div key={plan} className="bg-white rounded-2xl border border-stone-200/70 shadow-sm p-5 space-y-3">
+              <div key={plan} className="bg-stone-50 border border-stone-200 rounded-xl p-5 space-y-3">
                 <h3 className="text-sm font-medium text-stone-900">{PLAN_LABELS[plan]}</h3>
                 <ul className="text-xs text-stone-500 space-y-1">
                   <li>{formatLimit(PLAN_LIMITS[plan].members)} members</li>

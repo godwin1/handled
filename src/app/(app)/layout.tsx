@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
-import { logOut } from "@/lib/actions/auth";
 import { prisma } from "@/lib/prisma";
 import { ReminderSync } from "@/components/ReminderSync";
 import { AppLockGate } from "@/components/AppLockGate";
+import { SettingsMenu } from "@/components/SettingsMenu";
 import { canView, type Category } from "@/lib/permissions";
 
 const NAV: { href: string; label: string; category?: Category }[] = [
@@ -16,8 +16,6 @@ const NAV: { href: string; label: string; category?: Category }[] = [
   { href: "/assets", label: "Assets", category: "assets" },
   { href: "/accounts", label: "Accounts", category: "accounts" },
   { href: "/search", label: "Search" },
-  { href: "/household", label: "Household" },
-  { href: "/billing", label: "Billing" },
 ];
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -51,17 +49,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm text-stone-500">
-            <span className="hidden lg:inline text-stone-400 whitespace-nowrap max-w-[12rem] truncate">
-              {user.household.name}
-            </span>
-            <Link href="/account" className="hover:text-accent-600 transition-colors">
-              Account
-            </Link>
-            <form action={logOut}>
-              <button type="submit" className="hover:text-accent-600 transition-colors">
-                Log out
-              </button>
-            </form>
+            <SettingsMenu householdName={user.household.name} />
           </div>
         </div>
         <nav className="flex sm:hidden items-center gap-4 text-sm text-stone-600 px-4 pb-3 overflow-x-auto">
