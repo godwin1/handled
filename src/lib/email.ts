@@ -303,6 +303,40 @@ export async function sendLegacyAccessGrantedEmail(params: { to: string; contact
   });
 }
 
+const SUPPORT_INBOX = "godwin.sql@gmail.com";
+
+export async function sendSupportRequestEmail(params: {
+  fromName: string;
+  fromEmail: string;
+  householdName: string;
+  topic: string;
+  message: string;
+}) {
+  if (!process.env.RESEND_API_KEY) {
+    return { skipped: true as const, reason: "RESEND_API_KEY not configured" };
+  }
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;color:#1c1917;">
+      <h2 style="margin-bottom:4px;">Support request: ${escapeHtml(params.topic)}</h2>
+      <p style="font-size:13px;color:#78716c;margin-top:0;">
+        From ${escapeHtml(params.fromName)} (${escapeHtml(params.fromEmail)}) — ${escapeHtml(params.householdName)}
+      </p>
+      <p style="font-size:14px;white-space:pre-wrap;border-top:1px solid #e7e5e4;padding-top:12px;margin-top:12px;">${escapeHtml(
+        params.message
+      )}</p>
+    </div>
+  `;
+
+  return getClient().emails.send({
+    from: FROM,
+    to: SUPPORT_INBOX,
+    replyTo: params.fromEmail,
+    subject: `[Handled support] ${params.topic} — ${params.fromName}`,
+    html,
+  });
+}
+
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }

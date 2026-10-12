@@ -1,14 +1,21 @@
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/auth";
+import { BackToAppLink } from "@/components/BackToAppLink";
 
 export const metadata = { title: "Terms of Service — Handled" };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const user = await getCurrentUser();
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-        <Link href="/" className="font-display text-xl font-medium text-accent-600">
-          Handled
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="font-display text-xl font-medium text-accent-600">
+            Handled
+          </Link>
+          <BackToAppLink loggedIn={!!user} />
+        </div>
 
         <div className="mt-8 bg-white rounded-2xl border border-stone-200/70 shadow-[0_1px_2px_rgba(42,33,26,0.04),0_6px_16px_-4px_rgba(42,33,26,0.08)] p-6 sm:p-8 space-y-6 text-sm text-stone-700 leading-relaxed">
           <div>
